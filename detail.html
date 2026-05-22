@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Kamar - Hotel Reservasi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">HOTEL RESERVASI</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="kamar.html" style="font-weight: bold; border-bottom: 2px solid #101111;">Kamar</a></li>
+                <li><a href="fasilitas.html">Fasilitas</a></li>
+                <li><a href="cek-pesanan.html">Cek Pesanan</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="detail-container">
+        
+        <div class="detail-content">
+            <h1 id="detail-nama">Memuat Data Kamar...</h1>
+            <img id="detail-img" src="" class="detail-hero-img" alt="Kamar">
+            
+            <h3>FASILITAS UTAMA</h3>
+            <div class="amenities-grid">
+                <div class="amenity-item">🛏️ <span id="detail-kapasitas"></span></div>
+                <div class="amenity-item">📶 Wi-Fi Kecepatan Tinggi</div>
+                <div class="amenity-item">📺 Smart TV LED 40"</div>
+                <div class="amenity-item">☕ Pembuat Kopi & Teh</div>
+                <div class="amenity-item">❄️ AC Sentral</div>
+                <div class="amenity-item">🚿 Air Panas/Dingin</div>
+            </div>
+            
+            <h3>DESKRIPSI KAMAR</h3>
+            <p id="detail-deskripsi">-</p>
+        </div>
+
+        <div class="engine-sidebar">
+            <div class="booking-widget">
+                <h3 style="color: #101111; margin-bottom: 10px; border-bottom: 2px solid #E6E2DA; padding-bottom: 10px; font-size: 1.2rem;">Formulir Pemesanan</h3>
+                <h2 id="detail-harga" style="color: #154230; margin-bottom: 20px; font-size: 1.5rem;">Rp 0</h2>
+                
+                <form id="form-booking" class="sidebar-form">
+                    <label>Nama Lengkap (Sesuai KTP)</label>
+                    <input type="text" id="book-nama" placeholder="Masukkan nama Anda" required>
+                    
+                    <label>Email Pemesan</label>
+                    <input type="email" id="book-email" placeholder="nama@email.com" required>
+                    
+                    <label>Nomor Telepon / WhatsApp</label>
+                    <input type="number" id="book-tlp" placeholder="0812xxxxxx" required>
+                    
+                    <label>Tanggal Check-In</label>
+                    <input type="date" id="book-in" required>
+                    
+                    <label>Tanggal Check-Out</label>
+                    <input type="date" id="book-out" required>
+                    
+                    <button type="submit" class="btn-book-now" style="width: 100%; margin-top: 25px; padding: 12px; font-size: 1rem;">KONFIRMASI PESANAN</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <p style="text-align: center;">Hak Cipta &copy; 2026 Hotel Reservasi</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

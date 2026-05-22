@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Pesanan - Hotel Reservasi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">HOTEL RESERVASI</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="kamar.html">Kamar</a></li>
+                <li><a href="fasilitas.html">Fasilitas</a></li>
+                <li><a href="cek-pesanan.html" style="font-weight: bold; border-bottom: 2px solid #101111;">Cek Pesanan</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="tracking-page-bg">
+        
+        <div class="page-header tracking-header">
+            <h1>CEK STATUS PESANAN</h1>
+            <p>Masukkan ID Reservasi dan Email yang Anda gunakan saat memesan.</p>
+        </div>
+
+        <section class="tracking-section">
+            
+            <div class="tracking-box">
+                <form id="form-cek-pesanan" class="tracking-form">
+                    <div class="form-group-engine">
+                        <label>ID RESERVASI</label>
+                        <input type="number" id="input-id" placeholder="Contoh: 1" required>
+                    </div>
+                    <div class="form-group-engine" style="margin-top: 20px;">
+                        <label>EMAIL PEMESAN</label>
+                        <input type="email" id="input-email" placeholder="Contoh: nama@email.com" required>
+                    </div>
+                    <button type="submit" class="btn-dark-block" style="margin-top: 30px; font-size: 1rem;">CARI PESANAN</button>
+                </form>
+            </div>
+
+            <div id="hasil-pesanan" class="tracking-result" style="display: none;">
+                <div class="ticket-header">
+                    <h3>DETAIL RESERVASI #<span id="res-id"></span></h3>
+                    <span id="res-status" class="status-badge"></span>
+                </div>
+                
+                <div class="ticket-body">
+                    <div class="ticket-row">
+                        <div>
+                            <span class="label">Nama Tamu</span>
+                            <strong id="res-nama">-</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="label">Nomor Telepon</span>
+                            <strong id="res-tlp">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="ticket-row">
+                        <div>
+                            <span class="label">Check In</span>
+                            <strong id="res-in">-</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="label">Check Out</span>
+                            <strong id="res-out">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="ticket-row" style="border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <span class="label">Total Pembayaran</span>
+                            <strong id="res-harga" style="font-size: 1.3rem; color: #154230;">-</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="label">Tipe Kamar</span>
+                            <strong id="res-kamar" style="color: #A6824A;">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <footer class="site-footer" style="margin-top: 0;">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4>Hubungi Kami</h4>
+                <p>📍 Jl. Terogong Raya No. 17<br>Jakarta Selatan 12430 - Indonesia</p>
+                <p>📞 (021) 750 7050</p>
+                <p>✉️ info@hotelreservasi.com</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Media Sosial</h4>
+                <div class="social-grid">
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                    <a href="#">X (Twitter)</a>
+                    <a href="#">Facebook</a>
+                    <a href="#">YouTube</a>
+                    <a href="#">WhatsApp</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Hak Cipta &copy; 2026 Hotel Reservasi</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1054 @@
+/* ==========================================
+   1. PENGATURAN DASAR & WARNA LATAR (SOFT CREAM)
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #E6E2DA; /* Palet: Soft Cream */
+    color: #101111; /* Palet: Charcoal Black */
+}
+
+/* ==========================================
+   2. NAVIGASI ATAS
+   ========================================== */
+header.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 5%;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #154230; /* Palet: Emerald Green */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #101111; /* Palet: Charcoal Black */
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #A6824A; /* Palet: Antique Gold */
+}
+
+/* ==========================================
+   3. AREA SPANDUK (HERO - BERANDA)
+   ========================================== */
+.hero-engine {
+    /* Menggunakan link gambar hotel baru yang aktif */
+    background-image: linear-gradient(rgba(16, 17, 17, 0.4), rgba(16, 17, 17, 0.4)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    height: 55vh; 
+    width: 100%;
+    display: block; 
+}
+
+/* ==========================================
+   4. BAR PENCARIAN (BOOKING ENGINE)
+   ========================================== */
+.search-engine-bar {
+    background-color: #A6824A; /* Palet: Antique Gold */
+    padding: 20px 0;
+    box-shadow: 0 4px 10px rgba(16, 17, 17, 0.2);
+}
+
+.search-engine-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    gap: 15px;
+    padding: 0 5%;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.form-group-engine {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.form-group-engine label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #101111;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.form-group-engine input, .form-group-engine select {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #101111;
+}
+
+.form-group-engine input:focus, .form-group-engine select:focus {
+    outline: 2px solid #5D1E21; /* Palet: Deep Burgundy */
+}
+
+.btn-engine-search {
+    background-color: transparent;
+    color: #101111;
+    border: 1px solid #101111;
+    padding: 10px 25px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    height: 40px;
+}
+
+.btn-engine-search:hover {
+    background-color: #101111;
+    color: #A6824A;
+}
+
+/* ==========================================
+   5. LAYOUT UTAMA & DAFTAR KAMAR HORIZONTAL
+   ========================================== */
+.engine-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 5%;
+}
+
+.horizontal-card {
+    display: flex;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(16, 17, 17, 0.08);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.horizontal-card:hover {
+    box-shadow: 0 10px 25px rgba(16, 17, 17, 0.15);
+}
+
+.horizontal-img {
+    width: 320px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.horizontal-body {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.horizontal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.horizontal-header h3 {
+    color: #154230; /* Palet: Emerald Green */
+    font-size: 1.2rem;
+}
+
+.room-features {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.8;
+}
+
+.horizontal-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.link-more {
+    color: #A6824A; /* Palet: Antique Gold */
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.link-more:hover {
+    color: #5D1E21; /* Palet: Deep Burgundy */
+}
+
+.price-section {
+    text-align: right;
+}
+
+.price-val {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #101111;
+}
+
+.price-tax {
+    font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.btn-book-now {
+    background-color: #5D1E21; /* Palet: Deep Burgundy */
+    color: #E6E2DA; /* Palet: Soft Cream */
+    border: none;
+    padding: 8px 30px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-book-now:hover {
+    background-color: #A6824A;
+    color: #101111;
+}
+
+/* ==========================================
+   6. SIDEBAR WIDGET (RINGKASAN PESANAN)
+   ========================================== */
+.engine-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+.booking-summary-widget {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(16, 17, 17, 0.08);
+    padding: 25px;
+}
+
+.widget-title {
+    font-size: 1.1rem;
+    color: #101111;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #E6E2DA;
+    padding-bottom: 10px;
+}
+
+.date-summary {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.date-summary .label {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.date-summary strong {
+    font-size: 0.9rem;
+    color: #101111;
+}
+
+.action-prompt {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+    padding: 20px 0;
+}
+
+/* ==========================================
+   7. HALAMAN DETAIL KAMAR (detail.html)
+   ========================================== */
+.detail-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 5%;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    color: #101111;
+}
+
+.detail-content h1 {
+    font-size: 2.2rem;
+    color: #154230; /* Emerald Green */
+    margin-bottom: 20px;
+}
+
+.detail-hero-img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 20px rgba(16, 17, 17, 0.1);
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.amenity-item {
+    font-size: 0.95rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-content h3 {
+    color: #A6824A; /* Antique Gold */
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+}
+
+.detail-content p {
+    line-height: 1.8;
+    color: #444;
+}
+
+.booking-widget, .contact-widget {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 17, 17, 0.1);
+    margin-bottom: 30px;
+}
+
+.sidebar-form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.sidebar-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   8. TOMBOL WHATSAPP MENGAMBANG
+   ========================================== */
+.float-wa {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #154230; /* Palet: Emerald Green */
+    color: #E6E2DA; /* Palet: Soft Cream */
+    padding: 12px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(16, 17, 17, 0.3);
+    z-index: 100;
+    transition: transform 0.3s, background-color 0.3s, color 0.3s;
+}
+
+.float-wa:hover {
+    transform: translateY(-3px);
+    background-color: #A6824A; /* Palet: Antique Gold */
+    color: #101111; /* Palet: Charcoal Black */
+}
+
+/* ==========================================
+   9. AREA FOOTER (CHARCOAL BLACK)
+   ========================================== */
+.site-footer {
+    background-color: #101111; /* Palet: Charcoal Black */
+    color: #E6E2DA; /* Palet: Soft Cream */
+    padding: 60px 5% 20px 5%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-top: 60px;
+}
+
+.footer-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dibagi menjadi 2 kolom rata */
+    gap: 40px;
+    max-width: 900px; /* Dipersempit agar tidak terlalu renggang */
+    margin: 0 auto 50px auto;
+}
+
+.footer-col h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #A6824A; /* Palet: Antique Gold */
+}
+
+.footer-col p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    color: #E6E2DA;
+}
+
+/* Grid khusus untuk daftar media sosial agar jadi 2 lajur */
+.social-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px;
+}
+
+.social-grid a {
+    color: #E6E2DA;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s, transform 0.3s;
+    display: inline-block;
+}
+
+.social-grid a:hover {
+    color: #A6824A; /* Antique Gold saat di-hover */
+    transform: translateX(5px); /* Efek bergeser ke kanan sedikit */
+    font-weight: bold;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(230, 226, 218, 0.15); 
+    text-align: center; /* Hak cipta diubah ke posisi tengah */
+}
+
+.footer-bottom p {
+    font-size: 0.85rem;
+    color: rgba(230, 226, 218, 0.7);
+}
+
+/* Responsivitas Footer Layar HP */
+@media (max-width: 600px) {
+    .footer-container {
+        grid-template-columns: 1fr; /* Berubah jadi 1 kolom menyusun ke bawah */
+        text-align: center;
+    }
+    .social-grid {
+        grid-template-columns: 1fr; /* Media sosial jadi 1 lajur */
+        text-align: center;
+    }
+    .social-grid a:hover {
+        transform: none; /* Matikan efek geser di HP */
+    }
+}
+
+/* ==========================================
+   10. RESPONSIVITAS (HP & TABLET)
+   ========================================== */
+@media (max-width: 900px) {
+    /* Layout Utama */
+    .engine-layout, .detail-container { 
+        grid-template-columns: 1fr; 
+    }
+    
+    /* Footer */
+    .footer-container { 
+        grid-template-columns: 1fr 1fr; 
+    }
+    
+    /* Bar Pencarian */
+    .search-engine-container { 
+        flex-wrap: wrap; 
+    }
+    .form-group-engine {
+        flex-basis: 45%;
+    }
+    
+    /* Kartu Kamar Horizontal berubah jadi Vertikal di Tablet/HP */
+    .horizontal-card { 
+        flex-direction: column; 
+    }
+    .horizontal-img { 
+        width: 100%; 
+        height: 250px; 
+    }
+    
+    /* Detail Kamar */
+    .amenities-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-container { 
+        grid-template-columns: 1fr; 
+    }
+    .form-group-engine {
+        flex-basis: 100%;
+    }
+    .btn-engine-search {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* ==========================================
+   11. HALAMAN DAFTAR KAMAR GRID (kamar.html)
+   ========================================== */
+.page-header {
+    text-align: center;
+    padding: 60px 20px 20px 20px;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: #101111;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #101111;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+.room-grid-section {
+    padding: 40px 5% 80px 5%;
+}
+
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.room-card-grid {
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(16, 17, 17, 0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.room-card-grid:hover {
+    box-shadow: 0 10px 25px rgba(16, 17, 17, 0.15);
+    transform: translateY(-5px);
+}
+
+.room-card-grid img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.room-info-grid {
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.room-info-grid h3 {
+    font-size: 1.4rem;
+    color: #101111;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.room-info-grid p {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    
+    /* Memotong teks jadi 3 baris */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.btn-detail-grid {
+    margin-top: auto;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #101111;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+
+.btn-detail-grid:hover {
+    color: #A6824A; /* Antique Gold */
+}
+
+
+/* ==========================================
+   12. EFEK HOVER GAMBAR (kamar.html)
+   ========================================== */
+.img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    overflow: hidden; /* Mencegah gambar keluar batas saat membesar */
+}
+
+.img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease; /* Transisi halus untuk gambar */
+}
+
+/* Lapisan Gelap Transparan */
+.img-overlay {
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background-color: rgba(16, 17, 17, 0.6); /* Palet: Charcoal Black semi-transparan */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0; /* Disembunyikan secara default */
+    transition: opacity 0.3s ease;
+}
+
+/* Tombol Putih di Tengah Gambar */
+.overlay-btn {
+    background-color: white;
+    color: #101111; /* Palet: Charcoal Black */
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    transform: translateY(15px); /* Posisi awal sedikit ke bawah */
+    transition: transform 0.3s ease;
+}
+
+/* Aksi Saat Kartu Disorot (Di-hover) */
+.room-card-grid:hover .img-overlay {
+    opacity: 1; /* Munculkan lapisan gelap */
+}
+
+.room-card-grid:hover .overlay-btn {
+    transform: translateY(0); /* Efek tombol naik sedikit */
+}
+
+.room-card-grid:hover .img-wrapper img {
+    transform: scale(1.08); /* Efek gambar sedikit membesar (Zoom In) */
+}
+
+.room-card-grid:hover .btn-detail-grid {
+    color: #A6824A; /* Teks bawah ikut berubah jadi Antique Gold */
+}
+
+
+/* ==========================================
+   13. HALAMAN FASILITAS (fasilitas.html)
+   ========================================== */
+.facility-section {
+    padding: 60px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.bg-light {
+    background-color: #f9f8f6; /* Warna latar sedikit berbeda untuk pemisah */
+    max-width: 100%;
+    padding: 60px 5%;
+}
+
+.section-title-center {
+    text-align: center;
+    font-size: 1.8rem;
+    color: #101111;
+    margin-bottom: 50px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Restoran & Bar (Split Layout) */
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: white;
+    box-shadow: 0 4px 15px rgba(16, 17, 17, 0.05);
+}
+
+.split-img {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    object-fit: cover;
+}
+
+.split-text {
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.split-text h3 {
+    color: #154230; /* Emerald Green */
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.split-text p {
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+}
+
+.btn-outline {
+    border: 1px solid #A6824A; /* Antique Gold */
+    color: #A6824A;
+    padding: 10px 25px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    background-color: #A6824A;
+    color: #101111;
+}
+
+/* Pertemuan & Acara */
+.meeting-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 40px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.meeting-images img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.meeting-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.meeting-col h4 {
+    color: #101111;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.meeting-col p {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.amenity-list {
+    list-style-type: square;
+    padding-left: 20px;
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.virtual-tour-box {
+    background-color: #E6E2DA; /* Soft Cream */
+    padding: 30px;
+    border-radius: 4px;
+}
+
+.btn-dark-block {
+    display: block;
+    background-color: #101111; /* Charcoal Black */
+    color: #E6E2DA;
+    text-align: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-dark-block:hover {
+    background-color: #A6824A;
+    color: #101111;
+}
+
+/* Pernikahan & Sosial */
+.wedding-hero {
+    width: 100%;
+    max-height: 500px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.wedding-hero img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.wedding-intro {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto 50px auto;
+    color: #444;
+    line-height: 1.8;
+}
+
+.wedding-packages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.wedding-card {
+    text-align: center;
+}
+
+.wedding-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+.wedding-card h4 {
+    color: #154230;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.wedding-card p {
+    color: #666;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+/* Responsivitas Layar HP/Tablet */
+@media (max-width: 900px) {
+    .split-layout { grid-template-columns: 1fr; }
+    .split-img { height: 250px; }
+    .meeting-images { grid-template-columns: 1fr; }
+    .meeting-details-grid { grid-template-columns: 1fr; }
+    .wedding-packages-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ==========================================
+   14. HALAMAN CEK PESANAN (cek-pesanan.html)
+   ========================================== */
+.tracking-section {
+    max-width: 600px;
+    margin: 0 auto 100px auto;
+    padding: 0 5%;
+}
+
+.tracking-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 17, 17, 0.1);
+    margin-bottom: 40px;
+}
+
+.tracking-form input {
+    border: 1px solid #ccc;
+    background-color: #f9f8f6;
+}
+
+.tracking-result {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 17, 17, 0.1);
+    overflow: hidden;
+    border: 1px solid #A6824A; /* Aksen Antique Gold */
+}
+
+.ticket-header {
+    background-color: #101111; /* Charcoal Black */
+    color: #E6E2DA;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-header h3 {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.status-badge {
+    background-color: #A6824A;
+    color: #101111;
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.ticket-body {
+    padding: 30px;
+}
+
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.ticket-row .label {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.ticket-row strong {
+    font-size: 1.05rem;
+    color: #101111;
+}
+
+
+/* ==========================================
+   15. BACKGROUND HALAMAN CEK PESANAN
+   ========================================== */
+.tracking-page-bg {
+    /* Gradasi warna Charcoal Black transparan menutupi gambar lobi hotel */
+    background: linear-gradient(rgba(16, 17, 17, 0.75), rgba(16, 17, 17, 0.85)), 
+                url('https://images.unsplash.com/photo-1562438668-bcf0ca6578f0?w=1920&q=80') center/cover no-repeat;
+    min-height: calc(100vh - 80px); /* Memastikan background memenuhi layar minimal */
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+/* Mengubah warna teks judul agar kontras dengan background gelap */
+.tracking-header h1 {
+    color: #E6E2DA; /* Soft Cream */
+    border-bottom: 2px solid #A6824A; /* Antique Gold */
+}
+
+.tracking-header p {
+    color: #d1d1d1 !important;
+}
+
+/* Memodifikasi kotak form agar sedikit transparan dan mewah */
+.tracking-box {
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+
+/* ==========================================
+   16. PAGINATION (NEXT & PREV) - BERANDA
+   ========================================== */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 25px;
+    border-top: 1px dashed #ccc;
+}
+
+.btn-page {
+    background-color: #101111; /* Charcoal Black */
+    color: #E6E2DA; /* Soft Cream */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-page:hover:not(.disabled) {
+    background-color: #A6824A; /* Antique Gold */
+    color: #101111;
+    transform: translateY(-2px);
+}
+
+.btn-page.disabled {
+    background-color: #d1cfcb;
+    color: #888;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.page-indicator {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #555;
+}
