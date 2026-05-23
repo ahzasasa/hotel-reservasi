@@ -374,7 +374,7 @@ function initCekPesanan() {
                     document.getElementById('res-in').textContent = new Date(p.tanggal_masuk).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                     document.getElementById('res-out').textContent = new Date(p.tanggal_keluar).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                     document.getElementById('res-harga').textContent = formatRupiah(p.harga_terkunci);
-                    document.getElementById('res-kamar').textContent = p.nama_tipe;
+                    document.getElementById('res-kamar').textContent = `${p.nama_tipe} (Kamar No. ${p.nomor_kamar})`;
 
                     const badge = document.getElementById('res-status');
                     badge.style.backgroundColor = p.status_pesanan === 'Dikonfirmasi' ? '#154230' : (p.status_pesanan === 'Batal' ? '#5D1E21' : '#A6824A'); 

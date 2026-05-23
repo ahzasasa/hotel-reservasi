@@ -114,9 +114,9 @@ def cek_pesanan():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Logika SQL: Menggabungkan (JOIN) 5 tabel untuk merangkum data pesanan secara utuh
+        # PERBAIKAN: Menambahkan t.nomor_telepon agar ikut dikirim ke frontend
         query = """
-            SELECT r.*, t.nama_lengkap, t.email, k.nomor_kamar, tk.nama_tipe, d.harga_terkunci
+            SELECT r.*, t.nama_lengkap, t.email, t.nomor_telepon, k.nomor_kamar, tk.nama_tipe, d.harga_terkunci
             FROM reservasi r
             JOIN tamu t ON r.id_tamu = t.id_tamu
             JOIN detail_reservasi d ON r.id_reservasi = d.id_reservasi
@@ -128,14 +128,13 @@ def cek_pesanan():
         pesanan = cursor.fetchone()
         
         if pesanan:
-            # PERBAIKAN: Mengecek tipe data tanggal sebelum diformat agar aman dari error
             if isinstance(pesanan['tanggal_masuk'], datetime):
                 pesanan['tanggal_masuk'] = pesanan['tanggal_masuk'].strftime('%Y-%m-%d')
             if isinstance(pesanan['tanggal_keluar'], datetime):
                 pesanan['tanggal_keluar'] = pesanan['tanggal_keluar'].strftime('%Y-%m-%d')
             return jsonify({"status": "success", "data": pesanan})
         else:
-            return jsonify({"status": "not_found", "message": "Pesanan tidak ditemukan. Periksa kembali ID dan Email Anda."}), 404
+            return jsonify({"status": "not_found", "message": "Pesanan tidak ditemukan."}), 404
             
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
