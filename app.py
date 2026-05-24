@@ -114,64 +114,38 @@ def cek_pesanan():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # --- LOGIKA BARU: DETEKSI FASILITAS ---
-        # Jika ID mengandung huruf awalan modul fasilitas (EV, SP, FB, FS, dll)
-        if id_res.startswith(('EV', 'SP', 'FB', 'FS', 'BL', 'MR', 'WD', 'F')):
-            query = """
-                SELECT rf.id_res_fasilitas AS id_reservasi, t.nama_lengkap, t.email, t.nomor_telepon,
-                       f.nama_fasilitas AS layanan, rf.tanggal_acara, rf.waktu_mulai,
-                       rf.status_pesanan, rf.total_harga
-                FROM reservasi_fasilitas rf
-                JOIN tamu t ON rf.id_tamu = t.id_tamu
-                JOIN fasilitas f ON rf.id_fasilitas = f.id_fasilitas
-                WHERE rf.id_res_fasilitas = %s AND t.email = %s
-            """
-            cursor.execute(query, (id_res, email))
-            pesanan = cursor.fetchone()
-            
-            if pesanan:
-                # Format penanggalan dan waktu agar bisa dibaca JSON
-                if hasattr(pesanan['tanggal_acara'], 'strftime'):
-                    pesanan['tanggal_acara'] = pesanan['tanggal_acara'].strftime('%Y-%m-%d')
-                if hasattr(pesanan['waktu_mulai'], 'total_seconds'):
-                    hours, remainder = divmod(pesanan['waktu_mulai'].seconds, 3600)
-                    minutes, _ = divmod(remainder, 60)
-                    pesanan['waktu_mulai'] = f"{hours:02d}:{minutes:02d}"
-                    
-                return jsonify({"status": "success", "kategori": "fasilitas", "data": pesanan})
-
-        # --- LOGIKA LAMA: DETEKSI KAMAR ---
-        else:
-            query = """
-                SELECT r.*, t.nama_lengkap, t.email, t.nomor_telepon, k.nomor_kamar, tk.nama_tipe, d.harga_terkunci
-                FROM reservasi r
-                JOIN tamu t ON r.id_tamu = t.id_tamu
-                JOIN detail_reservasi d ON r.id_reservasi = d.id_reservasi
-                JOIN kamar k ON d.id_kamar = k.id_kamar
-                JOIN tipe_kamar tk ON k.id_tipe = tk.id_tipe
-                WHERE r.id_reservasi = %s AND t.email = %s
-            """
-            cursor.execute(query, (id_res, email))
-            pesanan = cursor.fetchone()
-            
-            if pesanan:
-                if hasattr(pesanan['tanggal_masuk'], 'strftime'):
-                    pesanan['tanggal_masuk'] = pesanan['tanggal_masuk'].strftime('%Y-%m-%dT%H:%M:%S')
-                if hasattr(pesanan['tanggal_keluar'], 'strftime'):
-                    pesanan['tanggal_keluar'] = pesanan['tanggal_keluar'].strftime('%Y-%m-%dT%H:%M:%S')
-                    
-                return jsonify({"status": "success", "kategori": "kamar", "data": pesanan})
+        # UPDATE QUERY: Menambahkan LEFT JOIN ke tabel pembayaran untuk mengambil referensi_transaksi
+        query = """
+            SELECT r.*, t.nama_lengkap, t.email, t.nomor_telepon, 
+                   k.nomor_kamar, tk.nama_tipe, i.total_bersih as harga_terkunci, i.status_pembayaran,
+                   p.referensi_transaksi
+            FROM reservasi r
+            JOIN tamu t ON r.id_tamu = t.id_tamu
+            JOIN detail_reservasi d ON r.id_reservasi = d.id_reservasi
+            JOIN kamar k ON d.id_kamar = k.id_kamar
+            JOIN tipe_kamar tk ON k.id_tipe = tk.id_tipe
+            JOIN invoice i ON r.id_reservasi = i.id_reservasi
+            LEFT JOIN pembayaran p ON i.id_invoice = p.id_invoice
+            WHERE r.id_reservasi = %s AND t.email = %s
+            ORDER BY p.id_pembayaran DESC LIMIT 1
+        """
+        cursor.execute(query, (id_res, email))
+        pesanan = cursor.fetchone()
         
-        # Jika tidak masuk di kedua kondisi atau data kosong
-        return jsonify({"status": "not_found", "message": "Pesanan tidak ditemukan."}), 404
-
+        if pesanan:
+            if isinstance(pesanan['tanggal_masuk'], datetime):
+                pesanan['tanggal_masuk'] = pesanan['tanggal_masuk'].strftime('%Y-%m-%dT%H:%M:%S')
+            if isinstance(pesanan['tanggal_keluar'], datetime):
+                pesanan['tanggal_keluar'] = pesanan['tanggal_keluar'].strftime('%Y-%m-%dT%H:%M:%S')
+            return jsonify({"status": "success", "data": pesanan})
+        else:
+            return jsonify({"status": "not_found", "message": "Pesanan tidak ditemukan."}), 404
+            
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-        
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
-
 
 # 5. Endpoint Membuat Pesanan Baru (Booking)
 @app.route('/api/buat-pesanan', methods=['POST'])
@@ -179,63 +153,100 @@ def buat_pesanan():
     data = request.json
     conn = None
     cursor = None
-    
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        conn.start_transaction()
+
+        checkin_dt = datetime.strptime(data['checkin'], '%Y-%m-%dT%H:%M')
+        checkout_dt = datetime.strptime(data['checkout'], '%Y-%m-%dT%H:%M')
         
-        # 1. Konversi ISO string dari datetime-local menjadi objek datetime
-        # Format: '2026-05-23T12:43'
-        checkin_dt = datetime.fromisoformat(data['checkin'])
-        checkout_dt = datetime.fromisoformat(data['checkout'])
-        
-        # 2. Cek apakah ada unit fisik kamar yang tersedia
-        # Kita ambil id_kamar yang id_tipe nya sesuai
-        cursor.execute("""
-            SELECT id_kamar, nomor_kamar 
-            FROM kamar 
-            WHERE id_tipe = %s AND status = 'Tersedia' 
-            LIMIT 1
-        """, (data['id_tipe'],))
-        kamar = cursor.fetchone()
-        
-        if not kamar:
-            return jsonify({"status": "error", "message": "Maaf, unit kamar tipe ini sedang tidak tersedia."}), 400
-            
-        id_kamar = kamar['id_kamar']
-        nomor_kamar = kamar['nomor_kamar']
-        
-        # 3. Handle data tamu
+        # 1. Cek Ketersediaan Kamar (Cari 1 kamar kosong untuk tipe yang dipilih)
+# UBAH QUERY: Tambahkan logika filter jeda 24 jam
+        query_kamar = """
+            SELECT k.id_kamar, k.nomor_kamar 
+            FROM kamar k
+            WHERE k.id_tipe = %s 
+            AND k.id_kamar NOT IN (
+                -- 1. Kamar yang sudah dipesan untuk tanggal yang diminta
+                SELECT dr.id_kamar FROM detail_reservasi dr
+                JOIN reservasi r ON dr.id_reservasi = r.id_reservasi
+                WHERE r.status_pesanan != 'Batal' 
+                AND (r.tanggal_masuk < %s AND r.tanggal_keluar > %s)
+                
+                UNION
+                
+                -- 2. Kamar yang baru saja check-out (Jeda 24 jam)
+                SELECT dr.id_kamar FROM detail_reservasi dr
+                JOIN reservasi r ON dr.id_reservasi = r.id_reservasi
+                WHERE r.status_pesanan != 'Batal' 
+                AND r.tanggal_keluar <= %s 
+                AND r.tanggal_keluar > DATE_SUB(%s, INTERVAL 24 HOUR)
+            ) LIMIT 1
+        """
+        # Kita masukkan parameter checkout_dt sebanyak 2 kali untuk filter ke-2
+        cursor.execute(query_kamar, (data['id_tipe'], checkout_dt, checkin_dt, checkin_dt, checkin_dt))
+        kamar_tersedia = cursor.fetchone()
+
+        if not kamar_tersedia:
+            return jsonify({"status": "full", "message": "Maaf, tipe kamar ini sudah penuh pada tanggal tersebut."})
+
+        id_kamar_terpilih = kamar_tersedia['id_kamar']
+        nomor_kamar_terpilih = kamar_tersedia['nomor_kamar']
+
+        # 2. Cek atau Buat Tamu Baru
         cursor.execute("SELECT id_tamu FROM tamu WHERE email = %s", (data['email'],))
         tamu = cursor.fetchone()
         if tamu:
             id_tamu = tamu['id_tamu']
+            cursor.execute("UPDATE tamu SET nama_lengkap=%s, nomor_telepon=%s WHERE id_tamu=%s",
+                           (data['nama'], data['telepon'], id_tamu))
         else:
-            cursor.execute("INSERT INTO tamu (nama_lengkap, email, nomor_telepon) VALUES (%s, %s, %s)", 
+            cursor.execute("INSERT INTO tamu (nama_lengkap, email, nomor_telepon) VALUES (%s, %s, %s)",
                            (data['nama'], data['email'], data['telepon']))
             id_tamu = cursor.lastrowid
-            
-        # 4. Generate ID Reservasi Cerdas (NomorKamar-Urutan)
-        cursor.execute("SELECT COUNT(*) as count FROM reservasi WHERE id_reservasi LIKE %s", (f"{nomor_kamar}-%",))
-        urutan = cursor.fetchone()['count'] + 1
-        id_reservasi = f"{nomor_kamar}-{urutan}"
+
+        # 3. Buat ID Reservasi Cerdas (Format: NOMORKAMAR-DDMMYY-INCREMENT)
+        now = datetime.now()
+        ddmmyy = now.strftime('%d%m%y')
         
-        # 5. Insert Reservasi
+        # Gabungkan nomor kamar yang ditarik dari database ke dalam prefix
+        prefix = f"{nomor_kamar_terpilih}-{ddmmyy}-" 
+        
+        # Cari pesanan terakhir dengan prefix kamar dan tanggal yang sama
+        cursor.execute(
+            "SELECT id_reservasi FROM reservasi WHERE id_reservasi LIKE %s ORDER BY LENGTH(id_reservasi) DESC, id_reservasi DESC LIMIT 1", 
+            (prefix + '%',)
+        )
+        last_res = cursor.fetchone()
+        
+        if last_res:
+            # Memotong teks berdasarkan tanda strip (-) dan mengambil angka urutan paling belakang
+            last_id_num = int(last_res['id_reservasi'].split('-')[-1])
+            id_reservasi = f"{prefix}{last_id_num + 1}"
+        else:
+            id_reservasi = f"{prefix}1"
+
+        # 4. Simpan ke Tabel reservasi (Data Utama)
         cursor.execute("""
             INSERT INTO reservasi (id_reservasi, id_tamu, tanggal_masuk, tanggal_keluar, status_pesanan, metode_pembayaran) 
             VALUES (%s, %s, %s, %s, 'Dikonfirmasi', %s)
         """, (id_reservasi, id_tamu, checkin_dt, checkout_dt, data['metode_pembayaran']))
-        
-        # 6. Insert Detail & Update Status Kamar
-        cursor.execute("INSERT INTO detail_reservasi (id_reservasi, id_kamar, harga_terkunci) VALUES (%s, %s, %s)",
-                       (id_reservasi, id_kamar, data['total_harga']))
-        
-        cursor.execute("UPDATE kamar SET status = 'Terisi' WHERE id_kamar = %s", (id_kamar,))
-        
+
+        # 5. Simpan ke Tabel detail_reservasi (Kunci Harga & Kamar)
+        cursor.execute("""
+            INSERT INTO detail_reservasi (id_reservasi, id_kamar, harga_terkunci) 
+            VALUES (%s, %s, %s)
+        """, (id_reservasi, id_kamar_terpilih, data['total_harga']))
+
+        # 6. Buat Tagihan di Tabel invoice
+        cursor.execute("""
+            INSERT INTO invoice (id_reservasi, total_kamar, total_bersih, status_pembayaran) 
+            VALUES (%s, %s, %s, 'Belum Dibayar')
+        """, (id_reservasi, data['total_harga'], data['total_harga']))
+
         conn.commit()
         return jsonify({"status": "success", "id_reservasi": id_reservasi})
-        
+
     except Exception as e:
         if conn: conn.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -374,6 +385,52 @@ def buat_pesanan_fasilitas():
         if conn: conn.close()
         
 
+# ==========================================
+# ENDPOINT SIMULASI PEMBAYARAN
+# ==========================================
+@app.route('/api/bayar-pesanan', methods=['POST'])
+def bayar_pesanan():
+    data = request.json
+    id_res = data.get('id_reservasi')
+    nominal = data.get('nominal')
+    metode = data.get('metode')
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1. Cari ID Invoice dari Nomor Reservasi ini
+        cursor.execute("SELECT id_invoice FROM invoice WHERE id_reservasi = %s", (id_res,))
+        inv = cursor.fetchone()
+        
+        if not inv:
+            return jsonify({"status": "error", "message": "Tagihan tidak ditemukan."}), 404
+
+        id_invoice = inv['id_invoice']
+
+        # 2. Catat Uang Masuk ke Tabel 'pembayaran'
+        referensi = f"PAY-{id_res}-{datetime.now().strftime('%H%M%S')}"
+        cursor.execute("""
+            INSERT INTO pembayaran (id_invoice, nominal, metode_pembayaran, referensi_transaksi)
+            VALUES (%s, %s, %s, %s)
+        """, (id_invoice, nominal, metode, referensi))
+
+        # 3. Ubah Status di Tabel 'invoice' menjadi Lunas!
+        cursor.execute("UPDATE invoice SET status_pembayaran = 'Lunas' WHERE id_reservasi = %s", (id_res,))
+
+        conn.commit()
+        return jsonify({"status": "success", "message": "Pembayaran Berhasil!"})
+
+    except Exception as e:
+        if conn: conn.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+        
+        
 # ==========================================
 # MENJALANKAN SERVER
 # ==========================================

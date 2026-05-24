@@ -1,9 +1,12 @@
--- 1. Reset Database
 DROP DATABASE IF EXISTS hotel_reservasi_db;
 CREATE DATABASE hotel_reservasi_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE hotel_reservasi_db;
 
--- 2. Tabel Master
+-- ==========================================
+-- 2. TABEL MASTER (Data yang berdiri sendiri)
+-- ==========================================
+
+-- Data Tamu
 CREATE TABLE tamu (
     id_tamu INT AUTO_INCREMENT PRIMARY KEY,
     nama_lengkap VARCHAR(100) NOT NULL,
@@ -11,6 +14,7 @@ CREATE TABLE tamu (
     nomor_telepon VARCHAR(15) NOT NULL
 ) ENGINE=InnoDB;
 
+-- Data Tipe Kamar
 CREATE TABLE tipe_kamar (
     id_tipe INT PRIMARY KEY,
     nama_tipe VARCHAR(50) NOT NULL,
@@ -20,6 +24,29 @@ CREATE TABLE tipe_kamar (
     harga_per_malam DECIMAL(12, 2) NOT NULL
 ) ENGINE=InnoDB;
 
+-- Data Fasilitas Tambahan
+CREATE TABLE fasilitas (
+    id_fasilitas INT AUTO_INCREMENT PRIMARY KEY,
+    nama_fasilitas VARCHAR(100) NOT NULL,
+    kategori ENUM('F&B', 'Event', 'Wellness') NOT NULL,
+    harga_dasar DECIMAL(12,2) NOT NULL,
+    satuan_harga VARCHAR(20) NOT NULL,
+    deskripsi TEXT
+) ENGINE=InnoDB;
+
+-- Data Staf/Karyawan Hotel
+CREATE TABLE staf (
+    id_staf INT AUTO_INCREMENT PRIMARY KEY,
+    nama_staf VARCHAR(100) NOT NULL,
+    posisi VARCHAR(50),
+    nomor_telepon VARCHAR(15)
+) ENGINE=InnoDB;
+
+-- ==========================================
+-- 3. TABEL FISIK & OPERASIONAL (Bergantung pada Tabel Master)
+-- ==========================================
+
+-- Data Fisik Kamar
 CREATE TABLE kamar (
     id_kamar INT AUTO_INCREMENT PRIMARY KEY,
     id_tipe INT,
@@ -30,16 +57,34 @@ CREATE TABLE kamar (
     FOREIGN KEY (id_tipe) REFERENCES tipe_kamar(id_tipe) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Jadwal Pembersihan Kamar (Housekeeping)
+CREATE TABLE jadwal_kebersihan (
+    id_jadwal INT AUTO_INCREMENT PRIMARY KEY,
+    id_kamar INT,
+    id_staf INT,
+    tanggal_tugas DATE NOT NULL,
+    jenis_tugas ENUM('Pembersihan Rutin', 'Pembersihan Total', 'Perbaikan') DEFAULT 'Pembersihan Rutin',
+    status_tugas ENUM('Menunggu', 'Sedang Dikerjakan', 'Selesai') DEFAULT 'Menunggu',
+    FOREIGN KEY (id_kamar) REFERENCES kamar(id_kamar) ON DELETE CASCADE,
+    FOREIGN KEY (id_staf) REFERENCES staf(id_staf) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ==========================================
+-- 4. TABEL RESERVASI (Inti Sistem)
+-- ==========================================
+
+-- Reservasi Utama (Kamar)
 CREATE TABLE reservasi (
-    id_reservasi VARCHAR(20) PRIMARY KEY, -- Mendukung ID Cerdas: 2501-1
+    id_reservasi VARCHAR(20) PRIMARY KEY, 
     id_tamu INT,
     tanggal_masuk DATETIME NOT NULL,
     tanggal_keluar DATETIME NOT NULL,
     status_pesanan ENUM('Menunggu', 'Dikonfirmasi', 'Selesai') DEFAULT 'Menunggu',
-    metode_pembayaran VARCHAR(50) DEFAULT 'Pay at Hotel', -- FITUR BARU: Menyimpan metode bayar E-Voucher
+    metode_pembayaran VARCHAR(50) DEFAULT 'Pay at Hotel', 
     FOREIGN KEY (id_tamu) REFERENCES tamu(id_tamu) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Detail Reservasi Kamar (Mendukung Multi-Kamar & Kunci Harga)
 CREATE TABLE detail_reservasi (
     id_detail INT AUTO_INCREMENT PRIMARY KEY,
     id_reservasi VARCHAR(20),
@@ -49,18 +94,7 @@ CREATE TABLE detail_reservasi (
     FOREIGN KEY (id_kamar) REFERENCES kamar(id_kamar) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-
--- 1. Tabel Master Fasilitas
-CREATE TABLE fasilitas (
-    id_fasilitas INT AUTO_INCREMENT PRIMARY KEY,
-    nama_fasilitas VARCHAR(100) NOT NULL,
-    kategori ENUM('F&B', 'Event', 'Wellness') NOT NULL,
-    harga_dasar DECIMAL(12,2) NOT NULL,
-    satuan_harga VARCHAR(20) NOT NULL,
-    deskripsi TEXT
-) ENGINE=InnoDB;
-
--- 2. Tabel Transaksi Reservasi Fasilitas (INI YANG ADA ID-NYA)
+-- Reservasi Fasilitas (Restoran, Spa, Event)
 CREATE TABLE reservasi_fasilitas (
     id_res_fasilitas VARCHAR(20) PRIMARY KEY, 
     id_tamu INT,
@@ -76,8 +110,41 @@ CREATE TABLE reservasi_fasilitas (
     FOREIGN KEY (id_fasilitas) REFERENCES fasilitas(id_fasilitas) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ==========================================
+-- 5. TABEL KEUANGAN (Billing & Payment)
+-- ==========================================
 
--- 3. Input Data Tipe Kamar (Dengan Kapasitas yang Benar)
+-- Tagihan Komprehensif
+CREATE TABLE invoice (
+    id_invoice INT AUTO_INCREMENT PRIMARY KEY,
+    id_reservasi VARCHAR(20) UNIQUE,
+    total_kamar DECIMAL(12, 2) DEFAULT 0,
+    total_fasilitas DECIMAL(12, 2) DEFAULT 0,
+    pajak DECIMAL(12, 2) DEFAULT 0,
+    diskon DECIMAL(12, 2) DEFAULT 0,
+    total_bersih DECIMAL(12, 2) NOT NULL,
+    status_pembayaran ENUM('Belum Dibayar', 'DP Dibayar', 'Lunas') DEFAULT 'Belum Dibayar',
+    FOREIGN KEY (id_reservasi) REFERENCES reservasi(id_reservasi) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Riwayat Pembayaran / Cicilan
+CREATE TABLE pembayaran (
+    id_pembayaran INT AUTO_INCREMENT PRIMARY KEY,
+    id_invoice INT,
+    tanggal_bayar TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nominal DECIMAL(12, 2) NOT NULL,
+    metode_pembayaran VARCHAR(50),
+    referensi_transaksi VARCHAR(100),
+    FOREIGN KEY (id_invoice) REFERENCES invoice(id_invoice) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+-- ==========================================
+-- 6. INPUT DATA AWAL (Tipe Kamar, Fasilitas, Kamar Fisik)
+-- ==========================================
+
+
+-- Input Data Tipe Kamar (Dengan Kapasitas yang Benar)
 INSERT INTO tipe_kamar VALUES 
 (1, 'Standard King', 2, 3, 5, 500000),
 (2, 'Standard Twin', 2, 3, 5, 500000),
@@ -593,3 +660,87 @@ INSERT INTO fasilitas (nama_fasilitas, kategori, harga_dasar, satuan_harga, desk
 ('Meeting Room', 'Event', 550000, 'per orang', 'Paket Pertemuan Sehari Penuh (8 Jam) termasuk sewa ruangan, 2x Coffee Break & 1x Makan Siang/Malam.'),
 ('Wedding Package', 'Event', 85000000, 'per paket', 'Paket pernikahan komprehensif termasuk katering, dekorasi standar, dan kamar pengantin.'),
 ('Spa & Wellness', 'Wellness', 450000, 'per sesi', 'Sesi relaksasi pijat tradisional selama 90 menit oleh terapis profesional.');
+
+
+
+-- ==========================================
+-- INPUT DATA MASTER STAF (SKALA HOTEL BESAR 436 KAMAR)
+-- ==========================================
+INSERT INTO staf (nama_staf, posisi, nomor_telepon) VALUES 
+
+-- 1. MANAGEMENT & SUPERVISOR (5 Orang)
+('Ratna Sari Dewi', 'Executive Housekeeper', '081112223333'),
+('Budi Santoso', 'Housekeeping Supervisor', '081234567890'),
+('Siti Aminah', 'Housekeeping Supervisor', '081298765432'),
+('Rina Marlina', 'Housekeeping Supervisor', '081311223344'),
+('Hendra Gunawan', 'Chief Engineering', '081555666777'),
+
+-- 2. HOUSEKEEPING / ROOM ATTENDANT (30 Orang - Dibagi 3 Shift)
+('Andi Saputra', 'Room Attendant', '081200001001'),
+('Dewi Lestari', 'Room Attendant', '081200001002'),
+('Agus Pratama', 'Room Attendant', '081200001003'),
+('Rini Wulandari', 'Room Attendant', '081200001004'),
+('Fajar Nugroho', 'Room Attendant', '081200001005'),
+('Nita Kusuma', 'Room Attendant', '081200001006'),
+('Dedi Setiawan', 'Room Attendant', '081200001007'),
+('Sari Indah', 'Room Attendant', '081200001008'),
+('Reza Pahlevi', 'Room Attendant', '081200001009'),
+('Maya Safitri', 'Room Attendant', '081200001010'),
+('Arief Rahman', 'Room Attendant', '081200001011'),
+('Tika Puspita', 'Room Attendant', '081200001012'),
+('Bagus Wijaya', 'Room Attendant', '081200001013'),
+('Lina Marlina', 'Room Attendant', '081200001014'),
+('Eko Prasetyo', 'Room Attendant', '081200001015'),
+('Rina Yuliana', 'Room Attendant', '081200001016'),
+('Yudi Herdiana', 'Room Attendant', '081200001017'),
+('Siska Rahmawati', 'Room Attendant', '081200001018'),
+('Dani Ramadhan', 'Room Attendant', '081200001019'),
+('Ani Haryanti', 'Room Attendant', '081200001020'),
+('Rizky Maulana', 'Room Attendant', '081200001021'),
+('Fitriani', 'Room Attendant', '081200001022'),
+('Wahyu Hidayat', 'Room Attendant', '081200001023'),
+('Dina Mariana', 'Room Attendant', '081200001024'),
+('Surya Saputra', 'Room Attendant', '081200001025'),
+('Mia Audina', 'Room Attendant', '081200001026'),
+('Iwan Fals', 'Room Attendant', '081200001027'),
+('Nurul Huda', 'Room Attendant', '081200001028'),
+('Gilang Dirga', 'Room Attendant', '081200001029'),
+('Ayu Ting Ting', 'Room Attendant', '081200001030'),
+
+-- 3. ENGINEERING / TEKNISI (10 Orang - Bertugas untuk maintenance/perbaikan)
+('Bambang Pamungkas', 'Teknisi AC & Listrik', '081300002001'),
+('Taufik Hidayat', 'Teknisi AC & Listrik', '081300002002'),
+('Ari Wibowo', 'Teknisi Plumbing/Air', '081300002003'),
+('Rafi Ahmad', 'Teknisi Plumbing/Air', '081300002004'),
+('Deny Cagur', 'Teknisi Umum', '081300002005'),
+('Andre Taulany', 'Teknisi Umum', '081300002006'),
+('Sule Prikitiew', 'Teknisi Elektronik', '081300002007'),
+('Parto Patrio', 'Teknisi Elektronik', '081300002008'),
+('Nunung Srimulat', 'Tukang Kayu / Sipil', '081300002009'),
+('Azis Gagap', 'Tukang Kayu / Sipil', '081300002010'),
+
+-- 4. FRONT OFFICE / RESEPSIONIS (8 Orang)
+('Isyana Sarasvati', 'Front Desk Agent', '081400003001'),
+('Raisa Andriana', 'Front Desk Agent', '081400003002'),
+('Afgansyah Reza', 'Front Desk Agent', '081400003003'),
+('Vidi Aldiano', 'Front Desk Agent', '081400003004'),
+('Maudy Ayunda', 'Guest Relation Officer', '081400003005'),
+('Chelsea Islan', 'Guest Relation Officer', '081400003006'),
+('Reza Rahadian', 'Concierge / Bellboy', '081400003007'),
+('Chicco Jerikho', 'Concierge / Bellboy', '081400003008'),
+
+-- 5. FOOD & BEVERAGE / EVENT (8 Orang)
+('Renatta Moeloek', 'Executive Chef', '081500004001'),
+('Juna Rorimpandey', 'Sous Chef', '081500004002'),
+('Arnold Poernomo', 'Restaurant Manager', '081500004003'),
+('Boy William', 'Bartender', '081500004004'),
+('Daniel Mananta', 'Bartender', '081500004005'),
+('Luna Maya', 'Banquet / Event Coord', '081500004006'),
+('Tara Basro', 'Waitress', '081500004007'),
+('Nicholas Saputra', 'Waiter', '081500004008'),
+
+-- 6. WELLNESS & SPA (4 Orang)
+('Dian Sastrowardoyo', 'Spa Manager', '081600005001'),
+('Adinia Wirasti', 'Spa Therapist', '081600005002'),
+('Putri Marino', 'Spa Therapist', '081600005003'),
+('Julie Estelle', 'Spa Therapist', '081600005004');
