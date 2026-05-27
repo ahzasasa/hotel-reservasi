@@ -63,17 +63,47 @@
                     <label>Catatan Tambahan (Opsional)</label>
                     <textarea id="fas-book-catatan" rows="2" placeholder="Cth: Alergi kacang, letak meja dekat jendela, dll" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;"></textarea>
 
-                    <label>Total Estimasi:</label>
+                    <label>Total Pembayaran:</label>
                     <input type="text" id="fas-total-display" readonly style="font-weight: bold; color: #5D1E21;">
                     <input type="hidden" id="fas-total-value">
                     
                     <label style="margin-top: 15px; display: block; font-weight: bold;">Metode Pembayaran:</label>
-                    <select id="fas-metode-bayar" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: white;">
-                        <option value="Transfer - BCA">Transfer - BCA</option>
-                        <option value="Transfer - Mandiri">Transfer - Mandiri</option>
-                        <option value="E-Wallet - GoPay">GoPay / QRIS</option>
-                        <option value="Credit Card">Kartu Kredit</option>
-                        <option value="Pay at Hotel">Bayar di Tempat</option>
+                    <label for="fas-metode-bayar" class="form-label mt-3">Metode Pembayaran:</label>
+                    <select class="form-select" id="fas-metode-bayar" required>
+                        <option value="" disabled selected>-- Pilih Metode Pembayaran --</option>
+                        
+                        <optgroup label="1. Credit/Debit Card">
+                            <option value="Visa">Visa</option>
+                            <option value="Mastercard">Mastercard</option>
+                            <option value="American Express (AMEX)">American Express (AMEX)</option>
+                            <option value="JCB">JCB</option>
+                            <option value="UnionPay">UnionPay</option>
+                        </optgroup>
+                        
+                        <optgroup label="2. Bank Transfer">
+                            <option value="BCA">BCA</option>
+                            <option value="Mandiri">Mandiri</option>
+                            <option value="BNI">BNI</option>
+                            <option value="BRI">BRI</option>
+                            <option value="CIMB Niaga">CIMB Niaga</option>
+                            <option value="Permata">Permata</option>
+                        </optgroup>
+                        
+                        <optgroup label="3. Virtual Account / E-Wallet">
+                            <option value="GoPay">GoPay</option>
+                            <option value="OVO">OVO</option>
+                            <option value="DANA">DANA</option>
+                            <option value="ShopeePay">ShopeePay</option>
+                            <option value="LinkAja">LinkAja</option>
+                        </optgroup>
+                        
+                        <optgroup label="4. QR Payment">
+                            <option value="QRIS">QRIS</option>
+                        </optgroup>
+
+                        <optgroup label="5. Pembayaran Langsung">
+                            <option value="Pay at Hotel">Bayar di Tempat (Pay at Hotel)</option>
+                        </optgroup>
                     </select>
                     
                     <button type="submit" class="btn-book-now" style="width: 100%; padding: 12px; font-size: 1rem;">
@@ -127,6 +157,7 @@
         </div>
     </footer>
     
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
 </body>
 </html>

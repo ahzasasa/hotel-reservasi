@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('v-nokamar').textContent = p.nomor_kamar;
                 document.getElementById('v-metode').textContent = p.metode_pembayaran;
                 document.getElementById('v-total').textContent = formatRupiah(p.harga_terkunci);
+                document.getElementById('v-transaksi').innerText = p.referensi_transaksi || 'Belum Ada Transaksi';
 
                 // Definisikan komponen kontrol tombol aksi
                 const statusBadge = document.getElementById('v-status');
@@ -83,69 +84,112 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Handler Eksekusi Pembayaran Rekening Invoice
                 btnBayar.onclick = function() {
+                    // INI BARIS YANG SEMPAT HILANG:
                     const nominalPilihan = selectBayar.value;
-                    if(confirm(`Konfirmasi pembayaran dengan metode status: ${nominalPilihan}?`)) {
-                        btnBayar.textContent = "MEMPROSES TRANSAKSI...";
-                        btnBayar.disabled = true;
 
-                        fetch('http://127.0.0.1:5000/api/proses-bayar', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                id_reservasi: p.id_reservasi, 
-                                status_pembayaran: nominalPilihan 
+                    Swal.fire({
+                        title: 'Konfirmasi Pembayaran',
+                        text: `Anda yakin ingin memproses pembayaran dengan status: ${nominalPilihan}?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Proses!',
+                        cancelButtonText: 'Batal',
+                        backdrop: `rgba(0,0,0,0.4)`
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // 1. Ubah tombol jadi loading
+                            btnBayar.textContent = "MEMPROSES TRANSAKSI...";
+                            btnBayar.disabled = true;
+
+                            // 2. Kirim data ke Python
+                            fetch('http://127.0.0.1:5000/api/proses-bayar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    id_reservasi: p.id_reservasi,
+                                    status_pembayaran: nominalPilihan
+                                })
                             })
-                        })
-                        .then(res => res.json())
-                        .then(dataBayar => {
-                            if(dataBayar.status === 'success') {
-                                alert("Pembayaran Berhasil Diverifikasi! Status invoice Anda diperbarui.");
-                                window.location.reload();
-                            } else {
-                                alert("Gagal memproses pembayaran: " + dataBayar.message);
+                            .then(res => res.json())
+                            .then(dataBayar => {
+                                if(dataBayar.status === 'success') {
+                                    // Pop-up sukses cantik
+                                    Swal.fire({
+                                        title: 'Berhasil!',
+                                        text: 'Pembayaran Diverifikasi! Status invoice diperbarui.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#198754'
+                                    }).then(() => {
+                                        window.location.reload(); // Reload otomatis
+                                    });
+                                } else {
+                                    // Pop-up gagal cantik
+                                    Swal.fire('Gagal!', "Pesan: " + dataBayar.message, 'error');
+                                    btnBayar.textContent = "💳 PROSES PEMBAYARAN";
+                                    btnBayar.disabled = false;
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire('Error!', "Koneksi gagal ke server.", 'error');
                                 btnBayar.textContent = "💳 PROSES PEMBAYARAN";
                                 btnBayar.disabled = false;
-                            }
-                        })
-                        .catch(err => {
-                            alert("Koneksi gagal. Pastikan backend Python Flask Anda menyala.");
-                            btnBayar.textContent = "💳 PROSES PEMBAYARAN";
-                            btnBayar.disabled = false;
-                        });
-                    }
+                            });
+                        }
+                    });
                 };
 
                 // Handler Eksekusi Pembatalan Alokasi Kamar
                 btnBatal.onclick = function() {
-                    if(confirm("PERINGATAN: Apakah Anda yakin ingin membatalkan pesanan ini? Kamar akan dikembalikan ke pool ketersediaan.")) {
-                        btnBatal.textContent = "MEMPROSES PEMBATALAN...";
-                        btnBatal.disabled = true;
+                    Swal.fire({
+                        title: 'Batalkan Pesanan?',
+                        text: "PERINGATAN: Apakah Anda yakin ingin membatalkan pesanan ini? Kamar akan dikembalikan ke pool ketersediaan.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',    // Warna Merah untuk aksi membatalkan
+                        cancelButtonColor: '#6c757d',  // Warna Abu-abu untuk tutup/kembali
+                        confirmButtonText: 'Ya, Batalkan!',
+                        cancelButtonText: 'Tidak, Kembali',
+                        backdrop: `rgba(0,0,0,0.6)`    // Latar belakang sedikit lebih gelap
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // 1. Ubah tombol jadi loading
+                            btnBatal.textContent = "MEMBATALKAN...";
+                            btnBatal.disabled = true;
 
-                        fetch('http://127.0.0.1:5000/api/user-batal', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                id_reservasi: p.id_reservasi, 
-                                email: email 
+                            // 2. Kirim perintah ke backend Python
+                            fetch('http://127.0.0.1:5000/api/batal-pesanan', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id_reservasi: p.id_reservasi })
                             })
-                        })
-                        .then(res => res.json())
-                        .then(dataBatal => {
-                            if(dataBatal.status === 'success') {
-                                alert(dataBatal.message);
-                                window.location.reload();
-                            } else {
-                                alert("Gagal membatalkan pesanan: " + dataBatal.message);
+                            .then(res => res.json())
+                            .then(dataBatal => {
+                                if(dataBatal.status === 'success') {
+                                    // Pop-up sukses dibatalkan
+                                    Swal.fire({
+                                        title: 'Dibatalkan!',
+                                        text: 'Pesanan berhasil dibatalkan. Kamar telah dikembalikan.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#198754'
+                                    }).then(() => {
+                                        window.location.reload(); // Reload halaman untuk perbarui status
+                                    });
+                                } else {
+                                    // Pop-up gagal
+                                    Swal.fire('Gagal!', "Pesan: " + dataBatal.message, 'error');
+                                    btnBatal.textContent = "❌ BATALKAN PESANAN";
+                                    btnBatal.disabled = false;
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire('Error!', "Koneksi gagal ke server.", 'error');
                                 btnBatal.textContent = "❌ BATALKAN PESANAN";
                                 btnBatal.disabled = false;
-                            }
-                        })
-                        .catch(err => {
-                            alert("Koneksi gagal. Pastikan backend Python Flask Anda menyala.");
-                            btnBatal.textContent = "❌ BATALKAN PESANAN";
-                            btnBatal.disabled = false;
-                        });
-                    }
+                            });
+                        }
+                    });
                 };
 
                 // Tampilkan struktur kontainer utama setelah injeksi data selesai

@@ -115,7 +115,6 @@ def cek_pesanan():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # UPDATE QUERY: Menambahkan LEFT JOIN ke tabel pembayaran untuk mengambil referensi_transaksi
         query = """
             SELECT r.*, t.nama_lengkap, t.email, t.nomor_telepon, 
                    k.nomor_kamar, tk.nama_tipe, i.total_bersih as harga_terkunci, i.status_pembayaran,
@@ -138,6 +137,13 @@ def cek_pesanan():
                 pesanan['tanggal_masuk'] = pesanan['tanggal_masuk'].strftime('%Y-%m-%dT%H:%M:%S')
             if isinstance(pesanan['tanggal_keluar'], datetime):
                 pesanan['tanggal_keluar'] = pesanan['tanggal_keluar'].strftime('%Y-%m-%dT%H:%M:%S')
+            
+            # =======================================================
+            # KODE PENGAMAN: Mencegah ID Transaksi Kosong (Null)
+            # =======================================================
+            if pesanan.get('status_pembayaran') == 'Lunas' and not pesanan.get('referensi_transaksi'):
+                pesanan['referensi_transaksi'] = f"PAY-{pesanan['id_reservasi']}"
+
             return jsonify({"status": "success", "data": pesanan})
         else:
             return jsonify({"status": "not_found", "message": "Pesanan tidak ditemukan."}), 404
@@ -227,12 +233,15 @@ def buat_pesanan():
         else:
             id_reservasi = f"{prefix}1"
 
+        # Ambil data metode pembayaran dari frontend, jika kosong jadikan Pay at Hotel
+        metode_bayar = data.get('metode_pembayaran', 'Pay at Hotel')
+
         # 4. Simpan ke Tabel reservasi (Data Utama)
         cursor.execute("""
-            INSERT INTO reservasi (id_reservasi, id_tamu, tanggal_masuk, tanggal_keluar, status_pesanan) 
-            VALUES (%s, %s, %s, %s, %s) 
-        """, (id_reservasi, id_tamu, checkin_dt, checkout_dt, 'Menunggu')) 
-
+            INSERT INTO reservasi (id_reservasi, id_tamu, tanggal_masuk, tanggal_keluar, status_pesanan, metode_pembayaran) 
+            VALUES (%s, %s, %s, %s, %s, %s) 
+        """, (id_reservasi, id_tamu, checkin_dt, checkout_dt, 'Menunggu', metode_bayar))
+        
         cursor.execute("""
             INSERT INTO detail_reservasi (id_reservasi, id_kamar, harga_terkunci) 
             VALUES (%s, %s, %s)
@@ -757,12 +766,36 @@ def proses_bayar():
     cursor = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True) 
         
+        # 1. Update status di tabel invoice
         cursor.execute("UPDATE invoice SET status_pembayaran = %s WHERE id_reservasi = %s", (status_bayar, id_res))
-        conn.commit()
         
-        return jsonify({"status": "success", "message": "Pembayaran berhasil diverifikasi!"})
+        # 2. JIKA LUNAS: Otomatis cetak resi ke tabel pembayaran
+        if status_bayar == 'Lunas':
+            # Tarik data tagihan
+            cursor.execute("SELECT id_invoice, total_bersih FROM invoice WHERE id_reservasi = %s", (id_res,))
+            inv = cursor.fetchone()
+            
+            if inv:
+                id_invoice = inv['id_invoice']
+                nominal = inv['total_bersih']
+                
+                referensi = f"PAY-{id_res}"
+                
+                # Cek dulu agar tidak dobel jika sudah pernah dibayar
+                cursor.execute("SELECT id_pembayaran FROM pembayaran WHERE id_invoice = %s", (id_invoice,))
+                cek_bayar = cursor.fetchone()
+                
+                if not cek_bayar:
+                    cursor.execute("""
+                        INSERT INTO pembayaran (id_invoice, nominal, metode_pembayaran, referensi_transaksi)
+                        VALUES (%s, %s, 'Terverifikasi Sistem', %s)
+                    """, (id_invoice, nominal, referensi))
+        
+        conn.commit()
+        return jsonify({"status": "success", "message": "Pembayaran berhasil diverifikasi dan dicatat!"})
+        
     except Exception as e:
         if conn: conn.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -814,7 +847,58 @@ def tambah_housekeeping():
         if cursor: cursor.close()
         if conn: conn.close()
         
-                                                
+
+# ==========================================
+# ENDPOINT DETAIL KAMAR AKTIF (POP-UP HOUSEKEEPING)
+# ==========================================
+@app.route('/api/detail-kamar-aktif', methods=['GET'])
+def detail_kamar_aktif():
+    no_kamar = request.args.get('nomor_kamar')
+    
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Mengambil data lengkap tamu yang statusnya 'Aktif' di kamar tersebut
+        query = """
+            SELECT r.id_reservasi, t.nama_lengkap, t.email, t.nomor_telepon, 
+                   k.nomor_kamar, r.tanggal_masuk, r.tanggal_keluar, 
+                   IFNULL(i.status_pembayaran, 'Belum Dibayar') as status_pembayaran,
+                   p.referensi_transaksi
+            FROM kamar k
+            JOIN detail_reservasi dr ON k.id_kamar = dr.id_kamar
+            JOIN reservasi r ON dr.id_reservasi = r.id_reservasi
+            JOIN tamu t ON r.id_tamu = t.id_tamu
+            LEFT JOIN invoice i ON r.id_reservasi = i.id_reservasi
+            LEFT JOIN pembayaran p ON i.id_invoice = p.id_invoice
+            WHERE k.nomor_kamar = %s AND r.status_pesanan IN ('Aktif', 'Menunggu')
+            ORDER BY p.id_pembayaran DESC LIMIT 1
+        """
+        cursor.execute(query, (no_kamar,))
+        detail = cursor.fetchone()
+
+        if detail:
+            # Rapihkan format tanggal agar mudah dibaca
+            detail['tanggal_masuk'] = detail['tanggal_masuk'].strftime('%d %b %Y, %H:%M')
+            detail['tanggal_keluar'] = detail['tanggal_keluar'].strftime('%d %b %Y, %H:%M')
+            
+            if detail['status_pembayaran'] == 'Lunas' and not detail['referensi_transaksi']:
+                detail['referensi_transaksi'] = f"PAY-{detail['id_reservasi']}"
+                
+            return jsonify({"status": "success", "data": detail})
+        else:
+            return jsonify({"status": "error", "message": "Data tamu tidak ditemukan."}), 404
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+        
+        
+                                                        
 # ==========================================
 # MENJALANKAN SERVER
 # ==========================================

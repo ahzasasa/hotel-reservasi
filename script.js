@@ -220,6 +220,7 @@ function loadDetailKamar() {
                             btnSubmit.textContent = 'KONFIRMASI PESANAN'; btnSubmit.disabled = false; return; 
                         }
 
+                        // PAYLOAD SUDAH BENAR DI SINI (SATU SAJA, TIDAK DOBEL)
                         const payload = {
                             id_tipe: kamar.id_tipe,
                             nama: document.getElementById('book-nama').value,
@@ -356,14 +357,25 @@ function loadDetailFasilitas() {
                 const result = await res.json();
                 
                 if (result.status === 'success') {
-                    alert("Reservasi Fasilitas Berhasil! ID: " + result.id_reservasi);
-                    window.location.href = 'index.html'; 
+                    // Pop-up Sukses ala SweetAlert2
+                    Swal.fire({
+                        title: 'Reservasi Berhasil!',
+                        text: `Fasilitas berhasil dipesan dengan ID: ${result.id_reservasi}`,
+                        icon: 'success',
+                        confirmButtonColor: '#198754',
+                        confirmButtonText: 'Lihat E-Voucher'
+                    }).then(() => {
+                        // Arahkan ke E-Voucher dengan membawa ID Reservasi Fasilitas dan Email
+                        window.location.href = `voucher.html?id=${result.id_reservasi}&email=${payload.email}`; 
+                    });
                 } else {
-                    alert("Gagal: " + result.message);
+                    // Pop-up Gagal
+                    Swal.fire('Gagal!', "Pesan: " + result.message, 'error');
                     btn.textContent = 'KONFIRMASI RESERVASI'; btn.disabled = false;
                 }
             } catch (err) {
-                alert("Kesalahan jaringan.");
+                // Pop-up Error Jaringan
+                Swal.fire('Error!', "Kesalahan jaringan atau server.", 'error');
                 btn.textContent = 'KONFIRMASI RESERVASI'; btn.disabled = false;
             }
         });
@@ -377,8 +389,15 @@ function hitungTotalFasilitas() {
     
     if (pax && pax > 0 && totalDisplay) {
         const total = pax * hargaFasilitasGlobal;
+        
+        // Menampilkan langsung total akhirnya saja tanpa rincian perkalian
         totalDisplay.value = formatRupiah(total);
+        
         if (totalValue) totalValue.value = total;
+    } else if (totalDisplay) {
+        // Jika input dikosongkan, kembalikan tampilan ke Rp 0
+        totalDisplay.value = "Rp 0";
+        if (totalValue) totalValue.value = 0;
     }
 }
 

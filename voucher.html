@@ -62,6 +62,10 @@
                 <td>Total Tagihan</td>
                 <td id="v-total"></td>
             </tr>
+            <tr>
+                <td style="color: #555;">ID Transaksi</td>
+                <td class="text-success" style="font-weight: bold;"><span id="v-transaksi"></span></td>
+            </tr>
         </table>
 
         <div class="notes">
@@ -80,14 +84,15 @@
                 </select>
             </div>
 
-            <button id="btn-bayar-sekarang" class="btn btn-bayar" style="display: none;">💳 PROSES PEMBAYARAN</button>
-            <button id="btn-batal-pesanan" class="btn btn-batal" style="display: none;">❌ BATALKAN PESANAN</button>
-            <button class="btn btn-print" onclick="window.print()">🖨️ SIMPAN SEBAGAI PDF</button>
+            <button id="btn-bayar-sekarang" class="btn btn-bayar" style="display: none;">PROSES PEMBAYARAN</button>
+            <button id="btn-batal-pesanan" class="btn btn-batal" style="display: none;">BATALKAN PESANAN</button>
+            <button class="btn btn-print" onclick="window.print()">SIMPAN SEBAGAI PDF</button>
 
         </div>
 
     </div>
 
     <script src="voucher.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

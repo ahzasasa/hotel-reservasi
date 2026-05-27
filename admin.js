@@ -60,7 +60,6 @@ function loadAdminData() {
                 else badgeStatus = '<span class="badge badge-belum">UNPAID / PENDING</span>';
 
                 // Tombol Aksi Dinamis
-                // ... baris kode sebelumnya ...
                 let btnAksi = '';
                 if (r.status_pesanan === 'Menunggu') {
                     btnAksi = `
@@ -70,8 +69,11 @@ function loadAdminData() {
                         <button class="btn btn-sm btn-danger btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Batal')">Batal</button>
                     `;
                 } else if (r.status_pesanan === 'Aktif') {
+                    // =========================================================================
+                    // INI PERUBAHANNYA: Menambahkan parameter ketiga '${r.status_pembayaran}'
+                    // =========================================================================
                     btnAksi = `
-                        <button class="btn btn-sm btn-warning btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Selesai')">
+                        <button class="btn btn-sm btn-warning btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Selesai', '${r.status_pembayaran}')">
                             <i class="fa-solid fa-right-from-bracket"></i> Check-Out
                         </button>
                     `;
@@ -178,22 +180,81 @@ function renderPetaKamarAsli() {
                     box.className = `room-box ${rm.status_visual}`;
                     box.innerHTML = `<i class="fa-solid fa-door-closed mb-1"></i> ${rm.nomor_kamar}`;
                     
-                    if (rm.status_visual === 'rm-dirty') {
-                        box.onclick = function() {
+                    // Sensor klik dinamis untuk berbagai warna kamar
+                    box.onclick = function() {
+                        // 1. JIKA KAMAR BIRU (Aktif) ATAU UNGU (Menunggu) DIKLIK (Munculkan Modal Detail Tamu)
+                        if (rm.status_visual === 'rm-occupied' || rm.status_visual === 'rm-booked') {
+                            fetch(`http://127.0.0.1:5000/api/detail-kamar-aktif?nomor_kamar=${rm.nomor_kamar}`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.status === 'success') {
+                                        let d = data.data;
+                                        document.getElementById('dtl-kamar').innerText = d.nomor_kamar;
+                                        document.getElementById('dtl-id').innerText = d.id_reservasi;
+                                        document.getElementById('dtl-nama').innerText = d.nama_lengkap;
+                                        document.getElementById('dtl-telepon').innerText = d.nomor_telepon;
+                                        document.getElementById('dtl-email').innerText = d.email;
+                                        document.getElementById('dtl-masuk').innerText = d.tanggal_masuk;
+                                        document.getElementById('dtl-keluar').innerText = d.tanggal_keluar;
+                                        document.getElementById('dtl-transaksi').innerText = d.referensi_transaksi || '-';
+                                        
+                                        let badgeBayar = d.status_pembayaran === 'Lunas' ? 'bg-success' : 'bg-danger';
+                                        document.getElementById('dtl-bayar').innerHTML = `<span class="badge ${badgeBayar}">${d.status_pembayaran}</span>`;
+                                        
+                                        let modalTamu = new bootstrap.Modal(document.getElementById('modalDetailTamu'));
+                                        modalTamu.show();
+                                    } else {
+                                        Swal.fire('Gagal!', "Tidak dapat mengambil data tamu: " + data.message, 'error');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error("Error:", err);
+                                    Swal.fire('Error!', "Koneksi ke server gagal.", 'error');
+                                });
+                        } 
+                        // 2. JIKA KAMAR KUNING DIKLIK (Kotor / Jeda)
+                        else if (rm.status_visual === 'rm-dirty') {
+                            // Isi form target secara otomatis
                             document.getElementById('hk-no-kamar').value = rm.nomor_kamar;
-                            document.getElementById('hk-id-kamar').value = rm.id_kamar;
-                            document.getElementById('hk-pilih-staf').focus();
-                        };
-                    } else {
-                        box.onclick = function() {
+                            let inputIdKamar = document.getElementById('hk-id-kamar');
+                            if (inputIdKamar) inputIdKamar.value = rm.id_kamar;
+
+                            // Munculkan Pop-up SweetAlert Kuning
+                            Swal.fire({
+                                title: 'Kamar Perlu Dibersihkan!',
+                                text: `Kamar ${rm.nomor_kamar} berstatus Kotor/Jeda. Nomor kamar telah otomatis dimasukkan ke formulir Surat Tugas di sebelah kiri.`,
+                                icon: 'warning',
+                                confirmButtonColor: '#ffc107', // Warna kuning Bootstrap
+                                confirmButtonText: 'Oke, Siapkan Tugas!'
+                            });
+                        }
+                        // 3. JIKA KAMAR HIJAU ATAU ABU-ABU DIKLIK (Bersih / Perbaikan)
+                        else {
                             let labelStatus = '';
-                            if (rm.status_visual === 'rm-clean') labelStatus = 'Bersih / Tersedia';
-                            if (rm.status_visual === 'rm-occupied') labelStatus = 'Sedang Terisi Guest';
-                            if (rm.status_visual === 'rm-booked') labelStatus = 'Telah Dipesan (Menunggu Check-In)';
-                            if (rm.status_visual === 'rm-repair') labelStatus = 'Perbaikan (Maintenance)';
-                            alert(`Kamar ${rm.nomor_kamar} saat ini berstatus: ${labelStatus}.`);
-                        };
-                    }
+                            let warnaTombol = '';
+                            let ikonTipe = '';
+
+                            if (rm.status_visual === 'rm-clean') {
+                                labelStatus = 'Bersih / Tersedia';
+                                warnaTombol = '#198754'; // Hijau Bootstrap
+                                ikonTipe = 'success';
+                            } else if (rm.status_visual === 'rm-repair') {
+                                labelStatus = 'Perbaikan (Maintenance)';
+                                warnaTombol = '#6c757d'; // Abu-abu Bootstrap
+                                ikonTipe = 'info';
+                            }
+                            
+                            if (labelStatus !== '') {
+                                Swal.fire({
+                                    title: 'Status Kamar',
+                                    text: `Kamar ${rm.nomor_kamar} saat ini berstatus: ${labelStatus}.`,
+                                    icon: ikonTipe,
+                                    confirmButtonColor: warnaTombol,
+                                    confirmButtonText: 'Tutup'
+                                });
+                            }
+                        }
+                    };
                     grid.appendChild(box);
                 });
                 
@@ -228,17 +289,27 @@ if (formTugaskan) {
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
-                alert(data.message);
-                document.getElementById('form-tugaskan-staf').reset();
+                // Pop-up Sukses Elegan
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: data.message, // Menampilkan pesan dari Python
+                    icon: 'success',
+                    confirmButtonColor: '#198754',
+                    confirmButtonText: 'Tutup'
+                }).then(() => {
+                    // Menggunakan kode reset pintarmu
+                    document.getElementById('form-tugaskan-staf').reset();
+                });
             } else {
-                alert("Gagal menerbitkan tugas: " + data.message);
+                // Pop-up Gagal Elegan
+                Swal.fire('Gagal!', data.message, 'error');
             }
         });
     });
 }
 
 function simulasiKamarSiap() {
-    alert("Kamar berstatus 'Tersedia/Bersih' kembali.");
+    Swal.fire('Pembersihan Selesai', "Kamar berstatus 'Tersedia/Bersih' kembali.", 'success');
     document.querySelectorAll('.rm-dirty').forEach(box => {
         box.className = "room-box rm-clean";
     });
@@ -246,23 +317,93 @@ function simulasiKamarSiap() {
 
 
 // Fungsi mengirim perintah ubah status ke Python
-function prosesReservasi(id_reservasi, statusBaru) {
-    if(confirm(`Ubah status pesanan ${id_reservasi} menjadi ${statusBaru}?`)) {
-        fetch('http://127.0.0.1:5000/api/update-reservasi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_reservasi: id_reservasi, status_baru: statusBaru })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.status === 'success') {
-                loadAdminData(); // Segarkan tabel otomatis
-                renderPetaKamarAsli(); // Segarkan peta kamar otomatis
-            } else {
-                alert("Gagal: " + data.message);
-            }
+function prosesReservasi(id_reservasi, statusBaru, statusBayar = 'Lunas') {
+    
+    // Cegah Check-Out jika tagihan belum lunas
+    if (statusBaru === 'Selesai' && statusBayar !== 'Lunas') {
+        Swal.fire({
+            title: 'Tindakan Ditolak!',
+            text: 'Tamu belum melakukan pembayaran (UNPAID). Selesaikan tagihan terlebih dahulu sebelum Check-Out.',
+            icon: 'error',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Mengerti'
         });
+        return; // Hentikan fungsi di sini, jangan hubungi server
     }
+    // ========================================================
+
+    // Logika cerdas untuk 3 status berbeda (Check-In, Check-Out, Batal)
+    let warnaTombol, teksTombol, teksTanya, ikonSweet;
+
+    if (statusBaru === 'Aktif') {
+        warnaTombol = '#198754'; // Hijau untuk masuk
+        teksTombol = 'Ya, Check-In!';
+        teksTanya = 'melakukan Check-In';
+        ikonSweet = 'question';
+    } else if (statusBaru === 'Selesai') {
+        warnaTombol = '#0d6efd'; // Biru untuk selesai
+        teksTombol = 'Ya, Check-Out!';
+        teksTanya = 'melakukan Check-Out (menyelesaikan pesanan)';
+        ikonSweet = 'info';
+    } else {
+        warnaTombol = '#d33'; // Merah untuk batal
+        teksTombol = 'Ya, Batalkan!';
+        teksTanya = 'membatalkan pesanan';
+        ikonSweet = 'warning';
+    }
+
+    Swal.fire({
+        title: 'Konfirmasi Tindakan',
+        text: `Apakah Anda yakin ingin ${teksTanya} untuk ID ${id_reservasi}?`,
+        icon: ikonSweet,
+        showCancelButton: true,
+        confirmButtonColor: warnaTombol,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: teksTombol,
+        cancelButtonText: 'Tutup',
+        backdrop: `rgba(0,0,0,0.5)`
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            // Tampilkan animasi loading saat memproses
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Menghubungi server...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Kirim ke server
+            fetch('http://127.0.0.1:5000/api/update-reservasi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_reservasi: id_reservasi, status_baru: statusBaru })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    // Pop-up Berhasil
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: `Pesanan ${id_reservasi} berhasil diperbarui.`,
+                        icon: 'success',
+                        confirmButtonColor: warnaTombol
+                    }).then(() => {
+                        loadAdminData(); // Segarkan tabel otomatis
+                        renderPetaKamarAsli(); // Segarkan peta kamar otomatis
+                    });
+                } else {
+                    Swal.fire('Gagal!', "Pesan: " + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error!', "Koneksi gagal ke server.", 'error');
+            });
+        }
+    });
 }
 
 
