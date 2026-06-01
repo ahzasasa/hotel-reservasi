@@ -4,7 +4,7 @@ const isAdminMaster = sessionStorage.getItem('isAdminMaster');
 
 if (isAdminMaster !== 'true') {
     alert("Akses Ditolak! Halaman ini hanya untuk Administrator Utama.");
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 
