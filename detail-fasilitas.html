@@ -3,8 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Kamar - Hotel Reservasi</title>
+    <title>Reservasi Fasilitas - Hotel Reservasi</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .badge-kategori {
+            display: inline-block;
+            background: #154230;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+    </style>
 </head>
 <body>
 
@@ -13,8 +35,8 @@
         <nav>
             <ul>
                 <li><a href="index.html">Beranda</a></li>
-                <li><a href="kamar.html" style="font-weight: bold; border-bottom: 2px solid #101111;">Kamar</a></li>
-                <li><a href="fasilitas.html">Fasilitas</a></li>
+                <li><a href="kamar.html">Kamar</a></li>
+                <li><a href="fasilitas.html" style="font-weight: bold; border-bottom: 2px solid #101111;">Fasilitas</a></li>
                 <li><a href="cek-pesanan.html">Cek Pesanan</a></li>
             </ul>
         </nav>
@@ -23,43 +45,48 @@
     <div class="detail-container">
         
         <div class="detail-content">
-            <h1 id="detail-nama">Memuat Data Kamar...</h1>
-            <img id="detail-img" src="" class="detail-hero-img" alt="Kamar">
+            <h1 id="fas-nama">Memuat Data Fasilitas...</h1>
+            <span id="fas-kategori" class="badge-kategori">Memuat...</span>
             
-            <h3>FASILITAS UTAMA</h3>
-            <div class="amenities-grid" id="detail-fasilitas"></div>
+            <img id="fas-img" src="" class="detail-hero-img" alt="Fasilitas">
             
-            <h3>DESKRIPSI KAMAR</h3>
-            <p id="detail-deskripsi"></p>
+            <h3 style="margin-top: 30px;">DESKRIPSI FASILITAS</h3>
+            <p id="fas-deskripsi" style="line-height: 1.8; color: #555;"></p>
         </div>
 
         <div class="engine-sidebar">
             <div class="booking-widget">
-                <h3 style="color: #101111; margin-bottom: 10px; border-bottom: 2px solid #E6E2DA; padding-bottom: 10px; font-size: 1.2rem;">Formulir Pemesanan</h3>
-                <h2 id="detail-harga" style="color: #154230; margin-bottom: 20px; font-size: 1.5rem;">Rp 0</h2>
+                <h3 style="color: #101111; margin-bottom: 10px; border-bottom: 2px solid #E6E2DA; padding-bottom: 10px; font-size: 1.2rem;">Formulir Reservasi</h3>
+                <h2 id="fas-harga" style="color: #154230; margin-bottom: 20px; font-size: 1.5rem;">Rp 0</h2>
                 
-                <form id="form-booking" class="sidebar-form">
+                <form id="form-fasilitas" class="sidebar-form">
                     <label>Nama Lengkap (Sesuai KTP)</label>
-                    <input type="text" id="book-nama" placeholder="Masukkan nama Anda" required>
+                    <input type="text" id="fas-book-nama" placeholder="Masukkan nama Anda" required>
                     
                     <label>Email Pemesan</label>
-                    <input type="email" id="book-email" placeholder="nama@email.com" required>
+                    <input type="email" id="fas-book-email" placeholder="nama@email.com" required>
                     
                     <label>Nomor Telepon / WhatsApp</label>
-                    <input type="number" id="book-tlp" placeholder="0812xxxxxx" required>
+                    <input type="number" id="fas-book-tlp" placeholder="0812xxxxxx" required>
                     
-                    <label>Waktu Check-In</label>
-                    <input type="datetime-local" id="book-in" required>
+                    <label>Tanggal Reservasi</label>
+                    <input type="date" id="fas-book-tanggal" required>
                     
-                    <label>Waktu Check-Out</label>
-                    <input type="datetime-local" id="book-out" required>
+                    <label>Waktu Kedatangan</label>
+                    <input type="time" id="fas-book-waktu" required>
+
+                    <label>Jumlah Orang (Pax)</label>
+                    <input type="number" id="fas-book-pax" min="1" value="1" required>
+
+                    <label>Catatan Tambahan (Opsional)</label>
+                    <textarea id="fas-book-catatan" rows="3" placeholder="Misal: Mohon siapkan kursi bayi..."></textarea>
 
                     <label>Total Pembayaran:</label>
-                    <input type="text" id="total-display" readonly>
-                    <input type="hidden" id="total-harga-value">
+                    <input type="text" id="fas-total-display" readonly style="background-color: #f5f5f5; font-weight: bold;">
+                    <input type="hidden" id="fas-total-value">
                     
                     <label style="margin-top: 15px; display: block; font-weight: bold;">Metode Pembayaran:</label>
-                    <select id="metode-bayar" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background-color: white;">
+                    <select id="fas-metode-bayar" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background-color: white;">
                         
                         <optgroup label="1. Credit/Debit Card">
                             <option value="Credit Card - Visa">Visa</option>
@@ -102,7 +129,7 @@
                         
                         <optgroup label="6. Pembayaran Langsung & Korporat">
                             <option value="Cash">Cash (Tunai)</option>
-                            <option value="Pay at Hotel">Pay at Hotel (Bayar saat Check-in)</option>
+                            <option value="Pay at Hotel">Pay at Hotel (Bayar di Tempat)</option>
                             <option value="Corporate Billing">Corporate Billing</option>
                         </optgroup>
                         
@@ -116,7 +143,7 @@
                     </select>
                     
                     <button type="submit" class="btn-book-now" style="width: 100%; padding: 12px; font-size: 1rem;">
-                        KONFIRMASI PESANAN
+                        KONFIRMASI RESERVASI
                     </button>
                 </form>
             </div>
@@ -126,28 +153,12 @@
 
     <footer class="site-footer">
         <div class="footer-container">
-            
             <div class="footer-col">
                 <h4>Hubungi Kami</h4>
                 <p>📍 Jl. Terogong Raya No. 17<br>Jakarta Selatan 12430 - Indonesia</p>
                 <p>📞 (021) 750 7050</p>
-                <p>✉️ info@hotelreservasi.com</p>
             </div>
-
-            <div class="footer-col">
-                <h4>Media Sosial</h4>
-                <div class="social-grid">
-                    <a href="#">Instagram</a>
-                    <a href="#">TikTok</a>
-                    <a href="#">X (Twitter)</a>
-                    <a href="#">Facebook</a>
-                    <a href="#">YouTube</a>
-                    <a href="#">WhatsApp</a>
-                </div>
-            </div>
-
         </div>
-
         <div class="footer-bottom">
             <p>Hak Cipta &copy; 2026 Hotel Reservasi</p>
         </div>
@@ -155,6 +166,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
-    <script src="detail.js"></script>
 </body>
 </html>

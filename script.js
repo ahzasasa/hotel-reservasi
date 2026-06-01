@@ -1,14 +1,80 @@
-// DATA PELENGKAP (Gambar & Deskripsi)
+// DATA PELENGKAP (Gambar & Deskripsi Spesifik Tiap Kamar)
 
 const dataPelengkap = {
-    'Standard': { img: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80', desc: 'Kamar nyaman seluas 25 meter persegi, dilengkapi dengan tempat tidur nyaman dan fasilitas modern. Pilihan ekonomis terbaik untuk pengalaman menginap yang efisien.' },
-    'Deluxe': { img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80', desc: 'Ruangan yang lebih luas dengan pemandangan kota. Dilengkapi dengan area duduk kecil, minibar, dan dekorasi premium untuk kenyamanan ekstra Anda.' },
-    'Family Room': { img: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80', desc: 'Dirancang khusus untuk keluarga. Memiliki ruang yang sangat lega dengan tempat tidur tambahan, memastikan kenyamanan seluruh anggota keluarga selama liburan.' },
-    'Suite': { img: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80', desc: 'Kemewahan puncak hotel kami. Suite luas ini dilengkapi dengan ruang tamu terpisah, dapur kecil, perabotan mewah, dan kamar mandi marmer kelas satu.' }
+    'Standard King': { 
+        img: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80', 
+        desc: 'Kamar nyaman seluas 25 meter persegi, dilengkapi dengan 1 tempat tidur King Size yang sangat empuk. Pilihan ekonomis terbaik untuk pasangan.' 
+    },
+    'Standard Twin': { 
+        img: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80', 
+        desc: 'Kamar seluas 25 meter persegi dengan 2 tempat tidur Single terpisah. Sangat cocok untuk rekan kerja atau teman perjalanan.' 
+    },
+    'Superior Room': { 
+        img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80', 
+        desc: 'Desain interior modern dengan ruang gerak yang lebih lega. Dilengkapi dengan meja kerja ergonomis dan pencahayaan hangat.' 
+    },
+    'Deluxe King': { 
+        img: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80', 
+        desc: 'Ruangan mewah yang luas dengan tempat tidur King Size premium. Dilengkapi dengan area duduk santai kecil dan minibar.' 
+    },
+    'Deluxe City View': { 
+        img: 'https://images.unsplash.com/photo-1505692952047-1a78307da8f2?w=800&q=80', 
+        desc: 'Nikmati pemandangan lampu kota yang memukau langsung dari jendela besar di kamar Anda. Pengalaman menginap yang tak terlupakan.' 
+    },
+    'Family King': { 
+        img: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80', 
+        desc: 'Kamar ekstra luas yang dirancang khusus untuk keluarga. Memiliki area bersantai tambahan dan memastikan ruang gerak bebas.' 
+    },
+    'Family Twin': { 
+        img: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80', 
+        desc: 'Solusi cerdas liburan keluarga dengan 2 tempat tidur besar. Desain ruangan yang lega memastikan seluruh anggota keluarga nyaman.' 
+    },
+    'Family Connecting': {
+        img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+        desc: 'Kamar keluarga yang luas dengan akses pintu penghubung. Sangat ideal untuk liburan keluarga besar tanpa kehilangan privasi.'
+    },
+    'Connecting Room': {
+        img: 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?w=800&q=80',
+        desc: 'Dua kamar yang terhubung melalui pintu dalam, sangat ideal untuk keluarga besar atau rombongan yang ingin tetap dekat.'
+    },
+    'Junior Suite': {
+        img: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80',
+        desc: 'Kamar elegan dengan pemisah semi-permanen antara area tidur dan ruang tamu kecil, memberikan kesan eksklusif seperti di rumah sendiri.'
+    },
+    'Suite Room': {
+        img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
+        desc: 'Kemewahan puncak hotel kami. Suite luas ini dilengkapi ruang tamu privat, dapur kecil, perabotan mewah, dan kamar mandi marmer kelas satu.'
+    },
+    'Presidential Suite': {
+        img: 'https://images.unsplash.com/photo-1631049035182-249067d7618e?w=800&q=80',
+        desc: 'Layanan VVIP dengan fasilitas tiada duanya. Ruang tamu raksasa, ruang makan pribadi, dan pemandangan panorama terbaik.'
+    }
 };
 
-// VARIABEL GLOBAL 
+// Fungsi Pintar Pencari Data Kamar
+function getInfoKamar(namaTipe) {
+    // 1. Prioritaskan mencari nama persis (agar tiap kamar beda gambar)
+    if (dataPelengkap[namaTipe]) {
+        return dataPelengkap[namaTipe];
+    }
+    
+    // 2. Jika tidak ada yang sama persis, tebak dari kata kuncinya (Fallback)
+    const keys = Object.keys(dataPelengkap);
+    for (let key of keys) {
+        if (namaTipe.toLowerCase().includes(key.toLowerCase())) {
+            return dataPelengkap[key];
+        }
+    }
+    
+    // 3. Gambar & Deskripsi Default jika sama sekali tidak dikenali
+    return { 
+        img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80', 
+        desc: 'Kamar eksklusif persembahan Hotel Reservasi dengan fasilitas lengkap dan kenyamanan maksimal.' 
+    };
+}
 
+
+// VARIABEL GLOBAL 
 let originalRoomData = [];
 let globalRoomData = []; 
 let currentPage = 1;     
@@ -18,35 +84,20 @@ let hargaFasilitasGlobal = 0;
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-function getBaseRoomName(namaTipe) {
-    if (namaTipe.includes('Presidential')) return 'Presidential';
-    if (namaTipe.includes('Suite Room')) return 'Suite';
-    if (namaTipe.includes('Junior')) return 'Junior Suite';
-    if (namaTipe.includes('Connecting')) return 'Connecting';
-    if (namaTipe.includes('Family')) return 'Family';
-    if (namaTipe.includes('Deluxe City')) return 'Deluxe City';
-    if (namaTipe.includes('Deluxe')) return 'Deluxe';
-    if (namaTipe.includes('Superior')) return 'Superior';
-    if (namaTipe.includes('Standard')) return 'Standard';
-    return 'Standard'; 
-}
-
 
 // INISIALISASI SAAT HALAMAN DIMUAT (ROUTER)
-
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;
     if (currentPath.includes('detail.html')) { loadDetailKamar(); }
     else if (currentPath.includes('detail-fasilitas.html')) { loadDetailFasilitas(); } 
     else if (currentPath.includes('kamar.html')) { loadDataKamarGrid(); }
     else if (currentPath.includes('cek-pesanan.html')) { initCekPesanan(); }
-    else if (currentPath.includes('fasilitas.html')) { /* statis, tidak butuh JS spesifik */ }
+    else if (currentPath.includes('fasilitas.html')) { /* statis */ }
     else { loadDataBeranda(); }
 });
 
 
-// BERANDA & PENCARIAN (DINAMIS DARI DATABASE)
-
+// BERANDA & PENCARIAN
 function loadDataBeranda() {
     fetch('http://127.0.0.1:5000/api/tipe-kamar')
         .then(response => response.json())
@@ -99,8 +150,8 @@ function renderKamarCards() {
     const paginatedData = globalRoomData.slice(start, end);
 
     paginatedData.forEach(kamar => {
-        const baseName = getBaseRoomName(kamar.nama_tipe);
-        const infoTambahan = dataPelengkap[baseName] || { img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80', desc: 'Kamar eksklusif persembahan Hotel Reservasi.' };
+        // PERUBAHAN: Memanggil fungsi pintar pencari gambar
+        const infoTambahan = getInfoKamar(kamar.nama_tipe);
         
         const fasilitasArray = kamar.fasilitas ? kamar.fasilitas.split(',') : [];
         let fasilitasSingkat = '';
@@ -108,9 +159,7 @@ function renderKamarCards() {
             fasilitasSingkat += `✔️ ${item.trim()}<br>`;
         });
         
-        if (fasilitasSingkat === '') {
-            fasilitasSingkat = 'Fasilitas belum ditambahkan.<br>';
-        }
+        if (fasilitasSingkat === '') fasilitasSingkat = 'Fasilitas belum ditambahkan.<br>';
 
         const cardHTML = `
             <div class="horizontal-card">
@@ -165,8 +214,7 @@ window.changePage = function(page) {
 }
 
 
-// FUNGSI 2: HALAMAN KAMAR GRID
-
+// HALAMAN KAMAR GRID
 function loadDataKamarGrid() {
     fetch('http://127.0.0.1:5000/api/tipe-kamar').then(res => res.json()).then(data => {
         const roomArray = data.data || data; 
@@ -175,8 +223,10 @@ function loadDataKamarGrid() {
         gridContainer.innerHTML = ''; 
         
         roomArray.forEach(kamar => {
-            const baseName = getBaseRoomName(kamar.nama_tipe);
-            const infoTambahan = dataPelengkap[baseName] || { img: '', desc: '' };
+            const infoTambahan = getInfoKamar(kamar.nama_tipe);
+            
+            const deskripsiFinal = kamar.deskripsi || infoTambahan.desc;
+            
             gridContainer.innerHTML += `
                 <div class="room-card-grid" onclick="window.location.href='detail.html?id=${kamar.id_tipe}'" style="cursor: pointer;">
                     <div class="img-wrapper">
@@ -185,7 +235,7 @@ function loadDataKamarGrid() {
                     </div>
                     <div class="room-info-grid">
                         <h3>${kamar.nama_tipe}</h3>
-                        <p>${infoTambahan.desc} Kapasitas maksimal ${kamar.kapasitas} orang.</p>
+                        <p>${deskripsiFinal}</p>
                         <span class="btn-detail-grid">PERIKSA DETAILNYA ❯</span>
                     </div>
                 </div>`;
@@ -194,8 +244,7 @@ function loadDataKamarGrid() {
 }
 
 
-// FUNGSI 3: DETAIL KAMAR & BOOKING
-
+// DETAIL KAMAR & BOOKING
 function loadDetailKamar() {
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get('id');
@@ -210,13 +259,12 @@ function loadDetailKamar() {
             if (kamar) {
                 hargaKamarGlobal = kamar.harga_per_malam; 
                 
-                const baseName = getBaseRoomName(kamar.nama_tipe);
-                const infoTambahan = dataPelengkap[baseName] || { img: '', desc: '-' };
+                // PERUBAHAN: Memanggil fungsi pintar pencari gambar
+                const infoTambahan = getInfoKamar(kamar.nama_tipe);
                 
                 document.getElementById('detail-nama').textContent = kamar.nama_tipe;
                 document.getElementById('detail-img').src = infoTambahan.img;
                 
-                // PERBAIKAN: Dibungkus IF agar tidak error jika id="detail-kapasitas" tidak ada di HTML
                 const elKapasitas = document.getElementById('detail-kapasitas');
                 if (elKapasitas) {
                     elKapasitas.textContent = `${kamar.kapasitas} Guest Maximum`;
@@ -322,7 +370,6 @@ function hitungTotalKamar() {
 
 
 // DETAIL FASILITAS & BOOKING
-
 const gambarFasilitas = {
     1: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80', 
     2: 'https://images.unsplash.com/photo-1574096079513-d8259312b78a?w=800&q=80', 
@@ -330,6 +377,34 @@ const gambarFasilitas = {
     4: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80', 
     5: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80', 
     6: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80'  
+};
+
+// DATA PELENGKAP FASILITAS (Untuk menyamakan deskripsi detail dengan halaman depan)
+const dataFasilitasLengkap = {
+    1: { 
+        nama: 'RESTORAN ANGGREK',
+        desc: 'Restoran Anggrek adalah tempat yang sempurna untuk pertemuan sarapan, makan siang bisnis, atau makan malam. Nikmati beragam hidangan internasional kami yang luar biasa, mulai dari hidangan favorit Barat, Asia, hingga Indonesia.'
+    },
+    2: { 
+        nama: 'ACAI BAR',
+        desc: 'Bersantailah bersama teman-teman Anda sambil menikmati satu atau dua minuman. Nikmati beragam pilihan steak dan hidangan spesial harian lainnya yang menggugah selera. Kami menghibur Anda setiap Rabu hingga Jumat malam dengan penampilan band akustik lokal.'
+    },
+    3: { 
+        nama: 'GRAND BALLROOM',
+        desc: 'Ruang serbaguna terbesar kami, dirancang dengan kemewahan klasik dan akustik sempurna. Sangat ideal untuk konferensi tingkat tinggi, peluncuran produk, atau pesta perayaan berskala besar.'
+    },
+    4: { 
+        nama: 'MEETING ROOM EXCLUSIVE',
+        desc: 'Ruang rapat modern yang dirancang untuk produktivitas maksimal. Dilengkapi dengan proyektor definisi tinggi, papan tulis interaktif, dan koneksi internet super cepat.'
+    },
+    5: { 
+        nama: 'WEDDING VENUE',
+        desc: 'Wujudkan pernikahan impian Anda di lokasi kami yang menawan. Kami menawarkan layanan perencanaan pernikahan lengkap, mulai dari dekorasi elegan hingga menu katering yang tak terlupakan.'
+    },
+    6: { 
+        nama: 'SPA & WELLNESS',
+        desc: 'Manjakan diri Anda dan pulihkan energi di pusat Spa kami. Nikmati berbagai perawatan tradisional dan modern yang dilakukan oleh terapis profesional kami.'
+    }
 };
 
 function loadDetailFasilitas() {
@@ -344,10 +419,13 @@ function loadDetailFasilitas() {
             if (fas) {
                 hargaFasilitasGlobal = fas.harga_dasar;
                 
-                document.getElementById('fas-nama').textContent = fas.nama_fasilitas;
+                // Mengambil nama dan deskripsi sinkron dari dataFasilitasLengkap
+                const infoFasilitas = dataFasilitasLengkap[fasId] || { nama: fas.nama_fasilitas, desc: fas.deskripsi };
+                
+                document.getElementById('fas-nama').textContent = infoFasilitas.nama;
                 document.getElementById('fas-kategori').textContent = fas.kategori;
-                document.getElementById('fas-deskripsi').textContent = fas.deskripsi;
-                document.getElementById('fas-harga').textContent = formatRupiah(fas.harga_dasar) + ' / ' + fas.satuan_harga;
+                document.getElementById('fas-deskripsi').textContent = infoFasilitas.desc;
+                document.getElementById('fas-harga').textContent = formatRupiah(fas.harga_dasar) + ' / per orang';
                 
                 if (gambarFasilitas[fasId]) document.getElementById('fas-img').src = gambarFasilitas[fasId];
 
@@ -426,7 +504,6 @@ function hitungTotalFasilitas() {
 
 
 // CEK PESANAN -> VOUCHER
-
 function initCekPesanan() {
     const form = document.getElementById('form-cek-pesanan');
     if(!form) return;
@@ -459,9 +536,6 @@ function initCekPesanan() {
 
 
 // FILTER KAMAR (HARGA & FASILITAS)
-
-
-// 1. membuat teks angka harga bergerak otomatis saat slider digeser
 document.addEventListener('DOMContentLoaded', function() {
     const sliderHarga = document.getElementById('filter-harga');
     const labelHarga = document.getElementById('label-harga');
@@ -472,7 +546,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 2. filter ke data kamar
 async function terapkanFilter() {
     const checkin = document.getElementById('filter-checkin').value;
     const checkout = document.getElementById('filter-checkout').value;
@@ -482,7 +555,6 @@ async function terapkanFilter() {
     let url = 'http://127.0.0.1:5000/api/tipe-kamar';
     let pakaiTanggal = false;
 
-    // 1. validasi tanggal (jika user mengisi form tanggal)
     if (checkin || checkout) {
         if (!checkin || !checkout) return alert('Silakan isi kedua tanggal Check-In dan Check-Out!');
         if (new Date(checkout) <= new Date(checkin)) return alert('Tanggal Check-Out harus setelah Check-In!');
@@ -500,12 +572,10 @@ async function terapkanFilter() {
         const wadah = document.getElementById('kamar-container');
         wadah.innerHTML = '<p style="text-align: center; padding: 50px;">Menerapkan filter...</p>';
 
-        // 2. ambil data dari backend
         const response = await fetch(url);
         const data = await response.json();
         originalRoomData = data.data || data;
 
-        // 3. filter berlapis di frontend (harga & fasilitas)
         const checkboxes = document.querySelectorAll('.filter-fasilitas:checked');
         const fasilitasPilihan = Array.from(checkboxes).map(cb => cb.value);
 
@@ -517,7 +587,6 @@ async function terapkanFilter() {
             return pasHarga && pasFasilitas && pasKapasitas;
         });
 
-        // 4. cetak ulang hasilnya
         currentPage = 1;
         renderKamarCards();
 
