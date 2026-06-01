@@ -169,7 +169,6 @@ window.changePage = function(page) {
 
 function loadDataKamarGrid() {
     fetch('http://127.0.0.1:5000/api/tipe-kamar').then(res => res.json()).then(data => {
-        // Ambil array data (mengatasi perbedaan struktur JSON API)
         const roomArray = data.data || data; 
         const gridContainer = document.getElementById('kamar-grid-container');
         if (!gridContainer) return;
@@ -216,7 +215,13 @@ function loadDetailKamar() {
                 
                 document.getElementById('detail-nama').textContent = kamar.nama_tipe;
                 document.getElementById('detail-img').src = infoTambahan.img;
-                document.getElementById('detail-kapasitas').textContent = `${kamar.kapasitas} Guest Maximum`;
+                
+                // PERBAIKAN: Dibungkus IF agar tidak error jika id="detail-kapasitas" tidak ada di HTML
+                const elKapasitas = document.getElementById('detail-kapasitas');
+                if (elKapasitas) {
+                    elKapasitas.textContent = `${kamar.kapasitas} Guest Maximum`;
+                }
+
                 document.getElementById('detail-deskripsi').textContent = kamar.deskripsi || infoTambahan.desc;
                 document.getElementById('detail-harga').textContent = formatRupiah(kamar.harga_per_malam) + ' / Malam';
 
