@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderPetaKamarAsli();
     muatDaftarStaf();
     muatAnalitik();
+    loadTugasAktif();
 
     const btnTambahHK = document.getElementById('btn-tambah-hk');
     if (btnTambahHK) {
@@ -71,58 +72,84 @@ function loadAdminData() {
     .then(res => res.json())
     .then(data => {
         if(data.status === 'success') {
-            // update ringkasan atas
+            // update ringkasan atas (Tetap dipertahankan)
             document.getElementById('ov-okupansi').textContent = data.okupansi + "%";
             document.getElementById('ov-okupansi-bar').style.width = data.okupansi + "%";
             document.getElementById('ov-checkin').textContent = data.checkin;
             document.getElementById('ov-checkout').textContent = data.checkout;
             document.getElementById('ov-pendapatan').textContent = formatRupiah(data.pendapatan);
 
-            // ppdate status tagihan
+            // update status tagihan (Tetap dipertahankan)
             document.getElementById('ov-inv-lunas').textContent = data.invoice['Lunas'] || 0;
             document.getElementById('ov-inv-dp').textContent = data.invoice['DP Dibayar'] || 0;
             document.getElementById('ov-inv-belum').textContent = data.invoice['Belum Dibayar'] || 0;
 
-            // pduate tabel reservasi
-            const tbody = document.getElementById('table-res-body');
-            tbody.innerHTML = '';
+            // PERSIAPAN 2 TABEL BARU
+            const tbodyKamar = document.getElementById('tbody-kamar');
+            const tbodyFasilitas = document.getElementById('tbody-fasilitas');
+            
+            // Kosongkan isi tabel sebelum diisi ulang
+            if(tbodyKamar) tbodyKamar.innerHTML = '';
+            if(tbodyFasilitas) tbodyFasilitas.innerHTML = '';
             
             data.reservasi.forEach(r => {
-                // label pembayaran
+                // label pembayaran aslimu
                 let badgeStatus = '';
                 if (r.status_pembayaran === 'Lunas') badgeStatus = '<span class="badge badge-lunas">PAID / LUNAS</span>';
                 else if (r.status_pembayaran === 'DP Dibayar') badgeStatus = '<span class="badge badge-dp">PARTIAL / DP 50%</span>';
                 else badgeStatus = '<span class="badge badge-belum">UNPAID / PENDING</span>';
 
+                // DETEKSI: Apakah ID diawali huruf? (Fasilitas)
+                const isFasilitas = /^[a-zA-Z]/.test(r.id_reservasi);
+
                 // tombol aksi dinamis
                 let btnAksi = '';
-                if (r.status_pesanan === 'Menunggu') {
+                
+                if (isFasilitas) {
+                    // JIKA FASILITAS: Tampilkan tombol lihat E-Voucher saja
                     btnAksi = `
-                        <button class="btn btn-sm btn-success btn-action me-1" onclick="prosesReservasi('${r.id_reservasi}', 'Aktif')">
-                            <i class="fa-solid fa-key"></i> Check-In
-                        </button>
-                        <button class="btn btn-sm btn-danger btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Batal')">Batal</button>
-                    `;
-                } else if (r.status_pesanan === 'Aktif') {
-                    btnAksi = `
-                        <button class="btn btn-sm btn-warning btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Selesai', '${r.status_pembayaran}')">
-                            <i class="fa-solid fa-right-from-bracket"></i> Check-Out
+                        <button class="btn btn-sm btn-outline-dark btn-action" onclick="window.open('voucher.html?id=${r.id_reservasi}&email=${r.email || ''}', '_blank')">
+                            <i class="fa-solid fa-file-invoice"></i> E-Voucher
                         </button>
                     `;
                 } else {
-                    btnAksi = `<span class="badge bg-secondary">${r.status_pesanan}</span>`;
+                    // JIKA KAMAR: Gunakan logika Check-In / Check-Out aslimu
+                    if (r.status_pesanan === 'Menunggu') {
+                        btnAksi = `
+                            <button class="btn btn-sm btn-success btn-action me-1" onclick="prosesReservasi('${r.id_reservasi}', 'Aktif')">
+                                <i class="fa-solid fa-key"></i> Check-In
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Batal')">Batal</button>
+                        `;
+                    } else if (r.status_pesanan === 'Aktif') {
+                        btnAksi = `
+                            <button class="btn btn-sm btn-warning btn-action" onclick="prosesReservasi('${r.id_reservasi}', 'Selesai', '${r.status_pembayaran}')">
+                                <i class="fa-solid fa-right-from-bracket"></i> Check-Out
+                            </button>
+                        `;
+                    } else {
+                        btnAksi = `<span class="badge bg-secondary">${r.status_pesanan}</span>`;
+                    }
                 }
 
-                tbody.innerHTML += `
+                // Cetak baris HTML (Mempertahankan atribut data-status-bayar milikmu)
+                const rowHTML = `
                     <tr data-status-bayar="${r.status_pembayaran}">
                         <td><strong>${r.id_reservasi}</strong></td>
-                        <td>${r.nama_lengkap}</td>
-                        <td><span class="badge bg-secondary">${r.nomor_kamar}</span></td>
+                        <td>${r.nama_lengkap || '-'}</td>
+                        <td><span class="badge bg-secondary">${r.nomor_kamar || '-'}</span></td>
                         <td>${r.tanggal_masuk} - ${r.tanggal_keluar}</td>
                         <td>${badgeStatus}</td>
                         <td class="text-center">${btnAksi}</td>
                     </tr>
                 `;
+
+                // Masukkan HTML ke tabel yang tepat
+                if (isFasilitas) {
+                    if(tbodyFasilitas) tbodyFasilitas.innerHTML += rowHTML;
+                } else {
+                    if(tbodyKamar) tbodyKamar.innerHTML += rowHTML;
+                }
             });
         }
     })
@@ -164,13 +191,18 @@ function populateStafDropdown() {
             selectStaf.innerHTML = '<option value="">-- Pilih Staf Tersedia --</option>';
             
             data.data.forEach(staf => {
+                let kodeCantik = "HK-" + staf.id_staf.toString().padStart(3, '0');
+                
                 let opt = document.createElement('option');
                 opt.value = staf.id_staf;
-                opt.textContent = `${staf.nama_staf} (${staf.posisi})`;
+                
+                opt.textContent = `${staf.nama_staf} (${kodeCantik})`;
+                
                 selectStaf.appendChild(opt);
             });
         }
-    });
+    })
+    .catch(err => console.error("Gagal menarik data staf housekeeping:", err));
 }
 
 function renderPetaKamarAsli() {
@@ -332,6 +364,8 @@ if (formTugaskan) {
                     confirmButtonText: 'Tutup'
                 }).then(() => {
                     document.getElementById('form-tugaskan-staf').reset();
+                    if (typeof loadTugasAktif === "function") loadTugasAktif();
+                    if (typeof renderPetaKamarAsli === "function") renderPetaKamarAsli();
                 });
             } else {
                 Swal.fire('Gagal!', data.message, 'error');
@@ -344,6 +378,73 @@ function simulasiKamarSiap() {
     Swal.fire('Pembersihan Selesai', "Kamar berstatus 'Tersedia/Bersih' kembali.", 'success');
     document.querySelectorAll('.rm-dirty').forEach(box => {
         box.className = "room-box rm-clean";
+    });
+}
+
+
+// FUNGSI 1: MENGAMBIL DAFTAR TUGAS AKTIF
+function loadTugasAktif() {
+    fetch('http://127.0.0.1:5000/api/tugas-housekeeping?t=' + new Date().getTime(), { cache: 'no-store' }) 
+    .then(res => res.json())
+    .then(data => {
+        const tbody = document.getElementById('tabel-tugas-aktif') || document.getElementById('tbody-tugas-aktif'); 
+        if (!tbody) return; 
+
+        if (data.status === 'success' && data.data && data.data.length > 0) {
+            tbody.innerHTML = ''; 
+            data.data.forEach(tugas => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${tugas.nomor_kamar || '-'}</td>
+                        <td>${tugas.nama_staf || '-'}</td>
+                        <td>${tugas.jenis_tugas || '-'}</td>
+                        <td><span class="badge bg-warning text-dark">Diproses</span></td>
+                        <td class="text-end pe-3">
+                            <span class="badge bg-secondary text-light p-2">
+                                <i class="fa-solid fa-clock"></i> Menunggu Staf
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4"><i class="fa-solid fa-mug-hot mb-2 fs-4"></i><br>Belum ada tugas kebersihan yang sedang berjalan.</td></tr>`;
+        }
+    })
+    .catch(err => console.error("Gagal menarik data tugas:", err));
+}
+
+// FUNGSI 2: MENGEKSEKUSI PENYELESAIAN TUGAS
+function selesaikanTugas(idTugas, idKamar) {
+    Swal.fire({
+        title: 'Kamar Sudah Bersih?',
+        text: 'Tugas ini akan dihapus dari daftar dan kamar akan menjadi hijau (Tersedia).',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Selesai!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('http://127.0.0.1:5000/api/selesai-tugas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_jadwal: idTugas, id_kamar: idKamar })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Berhasil!', data.message, 'success');
+                    // Refresh tabel dan Peta sekaligus
+                    loadTugasAktif(); 
+                    renderPetaKamarAsli(); 
+                } else {
+                    Swal.fire('Gagal!', data.message, 'error');
+                }
+            })
+            .catch(err => Swal.fire('Error!', 'Gagal terhubung ke server.', 'error'));
+        }
     });
 }
 

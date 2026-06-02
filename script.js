@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (currentPath.includes('detail-fasilitas.html')) { loadDetailFasilitas(); } 
     else if (currentPath.includes('kamar.html')) { loadDataKamarGrid(); }
     else if (currentPath.includes('cek-pesanan.html')) { initCekPesanan(); }
+    else if (currentPath.includes('voucher.html')) { loadVoucher(); } // <-- TAMBAHKAN BARIS INI
     else if (currentPath.includes('fasilitas.html')) { /* statis */ }
     else { loadDataBeranda(); }
 });
@@ -516,14 +517,24 @@ function initCekPesanan() {
 
         btnSubmit.textContent = "MENCARI..."; btnSubmit.disabled = true;
         
+        // Percobaan 1: Cari di API Kamar
         fetch(`http://127.0.0.1:5000/api/cek-pesanan?id=${idInput}&email=${emailInput}`)
             .then(res => res.json())
             .then(data => {
-                btnSubmit.textContent = "CARI PESANAN"; btnSubmit.disabled = false;
                 if (data.status === 'success') {
                     window.location.href = `voucher.html?id=${idInput}&email=${emailInput}`;
                 } else { 
-                    alert(data.message); 
+                    // Percobaan 2: Cari di API Fasilitas
+                    fetch(`http://127.0.0.1:5000/api/cek-pesanan-fasilitas?id=${idInput}&email=${emailInput}`)
+                        .then(res2 => res2.ok ? res2.json() : {status: 'error'})
+                        .then(data2 => {
+                            btnSubmit.textContent = "CARI PESANAN"; btnSubmit.disabled = false;
+                            if (data2.status === 'success') {
+                                window.location.href = `voucher.html?id=${idInput}&email=${emailInput}`;
+                            } else {
+                                alert("Pesanan tidak ditemukan di database manapun.");
+                            }
+                        });
                 }
             })
             .catch(err => { 
@@ -610,4 +621,47 @@ function resetFilter() {
     if (sumOut) sumOut.textContent = '-';
 
     loadDataBeranda();
+}
+
+
+// FUNGSI 6: MENAMPILKAN E-VOUCHER
+function loadVoucher() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+    const email = urlParams.get('email');
+
+    if (!orderId || !email) {
+        alert("Data pesanan tidak lengkap di URL.");
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Melakukan fetch ke backend Python untuk mengambil data dari MySQL
+    fetch(`http://127.0.0.1:5000/api/cek-pesanan?id=${orderId}&email=${email}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Menyesuaikan dengan struktur data yang dikirim oleh backend
+                const p = data.data || data; 
+                
+                document.getElementById('v-id').textContent = p.id_reservasi || orderId;
+                document.getElementById('v-nama').textContent = p.nama_tamu || p.nama || '-';
+                document.getElementById('v-email').textContent = email;
+                
+                // Mendeteksi apakah pesanan ini Kamar (nama_tipe) atau Fasilitas (nama_fasilitas)
+                document.getElementById('v-item').textContent = p.nama_tipe || p.nama_fasilitas || 'Layanan Reservasi';
+                
+                // Menyamakan nama kolom tanggal yang mungkin berbeda antara tabel kamar dan fasilitas
+                document.getElementById('v-checkin').textContent = p.tanggal_checkin || p.tanggal || '-';
+                document.getElementById('v-checkout').textContent = p.tanggal_checkout || p.waktu || '-';
+                
+                document.getElementById('v-total').textContent = formatRupiah(p.total_harga || 0);
+            } else {
+                alert("Peringatan: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Gagal menarik data pesanan dari server database.");
+        });
 }
