@@ -427,7 +427,7 @@ async function laporAbsen(tipe) {
                 document.getElementById('btn-sakit').disabled = true;
                 document.getElementById('btn-izin').disabled = true;
                 
-                // perbarui tabel Riwayat Presensi
+                // perbarui tabel riwayat Presensi
                 muatRiwayatPresensi();
             } else {
                 Swal.fire('Gagal!', data.message, 'error');

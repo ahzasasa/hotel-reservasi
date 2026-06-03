@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // FUNGSI UTAMA: Mencetak data ke layar
-    // Tambahan sakelar 'isFasilitas' untuk menyulap label tabel secara otomatis
+    // encetak data ke layar
     function cetakDataVoucher(dataResult, isFasilitas = false) {
         const p = dataResult.data || dataResult;
         
@@ -26,8 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isFasilitas) {
             const sectionJudul = document.querySelectorAll('.section-title')[0];
             if(sectionJudul) sectionJudul.textContent = 'DETAIL FASILITAS';
-
-            // Mengambil elemen kolom sebelah kiri dan mengganti teksnya
             document.getElementById('v-tipe').previousElementSibling.textContent = 'Layanan / Fasilitas';
             document.getElementById('v-checkin').previousElementSibling.textContent = 'Tanggal Reservasi';
             document.getElementById('v-checkout').previousElementSibling.textContent = 'Waktu Kedatangan';
@@ -35,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('v-nokamar').previousElementSibling.textContent = 'Status Layanan';
             document.getElementById('v-nokamar').textContent = 'Sesuai Pesanan';
         } 
-        // JIKA INI ADALAH VOUCHER KAMAR (Kembalikan ke Default)
         else {
             document.getElementById('v-nokamar').textContent = p.nomor_kamar || 'Menunggu Alokasi';
         }
@@ -53,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const statPesanan = p.status_pesanan || p.status || 'Pending';
         const statPembayaran = p.status_pembayaran || 'Unpaid';
 
-        // 1. Validasi status pembatalan pesanan
+        // 1. validasi status pembatalan pesanan
         if (statPesanan.toLowerCase().includes('batal')) {
             statusBadge.textContent = 'CANCELED / BATAL';
             statusBadge.style.borderColor = '#d9534f';
@@ -62,14 +58,14 @@ document.addEventListener('DOMContentLoaded', function() {
             btnBayar.style.display = 'none';
             opsiBayar.style.display = 'none';
         } else {
-            // Tombol pembatalan
+            // tombol pembatalan
             if (!statPesanan.toLowerCase().includes('check-in') && !statPesanan.toLowerCase().includes('selesai')) {
                 btnBatal.style.display = 'block';
             } else {
                 btnBatal.style.display = 'none';
             }
 
-            // 2. Validasi status pembayaran
+            // 2. validasi status pembayaran
             if (statPembayaran.toLowerCase().includes('lunas') || statPembayaran.toLowerCase().includes('paid')) {
                 statusBadge.textContent = 'PAID / LUNAS';
                 statusBadge.style.borderColor = '#154230';
@@ -94,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Handler Pembayaran
+        // handler pembayaran
         btnBayar.onclick = function() {
             const nominalPilihan = selectBayar.value;
             Swal.fire({
@@ -140,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        // Handler Pembatalan
+        // handler pembatalan
         btnBatal.onclick = function() {
             Swal.fire({
                 title: 'Batalkan Pesanan?',
@@ -186,9 +182,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('voucher-content').style.display = 'block';
     }
 
-    // PENCARIAN GANDA (Jantung dari sistem ini)
+    // PENCARIAN GANDA
     
-    // 1. Cari dulu di database Kamar
+    // 1. cari dulu di database Kamar
     fetch(`http://127.0.0.1:5000/api/cek-pesanan?id=${idReservasi}&email=${email}`)
         .then(res => res.ok ? res.json() : Promise.reject(res))
         .then(data => {
@@ -199,12 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(errKamar => {
-            // 2. Jika gagal di kamar, mari kita cari di database Fasilitas
+            // 2. jika gagal di kamar, cari di database fasilitas
             fetch(`http://127.0.0.1:5000/api/cek-pesanan-fasilitas?id=${idReservasi}&email=${email}`)
                 .then(res => res.ok ? res.json() : {status: 'error'})
                 .then(dataFas => {
                     if (dataFas.status === 'success') {
-                        cetakDataVoucher(dataFas, true); // Parameter true = Ini pesanan Fasilitas
+                        cetakDataVoucher(dataFas, true);
                     } else {
                         Swal.fire('Gagal', 'Pesanan Kamar maupun Fasilitas tidak ditemukan.', 'error')
                             .then(() => window.location.href = 'index.html');
