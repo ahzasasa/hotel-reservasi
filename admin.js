@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
     muatAnalitik();
     loadTugasAktif();
 
+    const inputCariStaf = document.getElementById('search-staf');
+    if (inputCariStaf) {
+        inputCariStaf.addEventListener('input', cariStaf);
+    }
+
     const btnTambahHK = document.getElementById('btn-tambah-hk');
     if (btnTambahHK) {
         btnTambahHK.addEventListener('click', simpanTugasHousekeeping);
@@ -175,6 +180,23 @@ function filterReservasiTable() {
             row.style.display = "";
         } else {
             row.style.display = "none";
+        }
+    });
+}
+
+// FUNGSI PENCARIAN DI TABEL MANAJEMEN STAF
+function cariStaf() {
+    const keyword = document.getElementById('search-staf').value.toLowerCase();
+    
+    const barisTabel = document.querySelectorAll('#table-karyawan-body tr');
+
+    barisTabel.forEach(baris => {
+        const teksBaris = baris.innerText.toLowerCase();
+        
+        if(teksBaris.includes(keyword)) {
+            baris.style.display = "";
+        } else {
+            baris.style.display = "none";
         }
     });
 }

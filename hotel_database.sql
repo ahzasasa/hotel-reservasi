@@ -1,15 +1,13 @@
--- ==========================================
--- 1. SETUP DATABASE
--- ==========================================
 DROP DATABASE IF EXISTS hotel_reservasi_db;
 CREATE DATABASE hotel_reservasi_db;
 USE hotel_reservasi_db;
 
--- ==========================================
--- 2. TABEL MASTER
--- ==========================================
 
--- Data Tamu
+-- TABEL MASTER
+
+
+-- tamu
+
 CREATE TABLE tamu (
     id_tamu INT AUTO_INCREMENT PRIMARY KEY,
     nama_lengkap VARCHAR(100) NOT NULL,
@@ -17,7 +15,8 @@ CREATE TABLE tamu (
     nomor_telepon VARCHAR(15) NOT NULL
 ) ENGINE=InnoDB;
 
--- Data Tipe Kamar
+-- tipe kamar
+
 CREATE TABLE tipe_kamar (
     id_tipe INT PRIMARY KEY,
     nama_tipe VARCHAR(50) NOT NULL,
@@ -29,7 +28,8 @@ CREATE TABLE tipe_kamar (
     deskripsi TEXT
 ) ENGINE=InnoDB;
 
--- Data Fasilitas Tambahan
+-- fasilitas tambahan
+
 CREATE TABLE fasilitas (
     id_fasilitas INT AUTO_INCREMENT PRIMARY KEY,
     nama_fasilitas VARCHAR(100) NOT NULL,
@@ -39,7 +39,8 @@ CREATE TABLE fasilitas (
     deskripsi TEXT
 ) ENGINE=InnoDB;
 
--- Data Master Posisi (Sudah dilengkapi kolom counter untuk generator ID)
+-- posisi staf/pekerja
+
 CREATE TABLE posisi (
     id_posisi INT AUTO_INCREMENT PRIMARY KEY,
     kode_posisi VARCHAR(10) NOT NULL UNIQUE,
@@ -49,7 +50,8 @@ CREATE TABLE posisi (
     counter INT DEFAULT 0
 ) ENGINE=InnoDB;
 
--- Data Staf/Karyawan Hotel
+-- data staf
+
 CREATE TABLE staf (
     id_staf INT AUTO_INCREMENT PRIMARY KEY,
     kode_staf VARCHAR(20) UNIQUE,
@@ -61,6 +63,7 @@ CREATE TABLE staf (
     FOREIGN KEY (id_posisi) REFERENCES posisi(id_posisi) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- presensi
 
 CREATE TABLE presensi (
     id_presensi INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,7 +75,7 @@ CREATE TABLE presensi (
     FOREIGN KEY (id_staf) REFERENCES staf(id_staf) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-
+-- slip gaji staf
 CREATE TABLE slip_gaji (
     id_gaji INT AUTO_INCREMENT PRIMARY KEY,
     id_staf INT,
@@ -87,12 +90,13 @@ CREATE TABLE slip_gaji (
 ) ENGINE=InnoDB;
 
 
--- ==========================================
--- 3. TRIGGERS UNTUK KODE STAF OTOMATIS
--- ==========================================
+
+-- TRIGGERS UNTUK KODE STAF OTOMATIS
+
 DELIMITER //
 
--- Trigger 1: Otomatis membuat ID saat mendaftarkan staf baru
+-- trigger 1: otomatis membuat id saat mendaftarkan staf baru
+
 CREATE TRIGGER trg_staf_insert
 BEFORE INSERT ON staf
 FOR EACH ROW
@@ -100,18 +104,18 @@ BEGIN
     DECLARE v_kode VARCHAR(10);
     DECLARE v_seq INT;
 
-    -- Ambil kode (contoh: HK) dan naikkan angka counternya
+    -- ambil kode posisi (contoh: HK)
     SELECT kode_posisi, counter + 1 INTO v_kode, v_seq
     FROM posisi WHERE id_posisi = NEW.id_posisi;
 
-    -- Simpan urutan terbaru kembali ke tabel posisi
+    -- simpan urutan terbaru kembali ke tabel posisi
     UPDATE posisi SET counter = v_seq WHERE id_posisi = NEW.id_posisi;
 
-    -- Gabungkan menjadi kode_staf (Contoh: HK-001)
+    -- gabungkan menjadi kode_staf (contoh: HK-001)
     SET NEW.kode_staf = CONCAT(v_kode, '-', LPAD(v_seq, 3, '0'));
 END //
 
--- Trigger 2: Otomatis mengubah ID jika staf dipindahtugaskan
+-- trigger 2: otomatis mengubah id jika staf dipindahtugaskan
 CREATE TRIGGER trg_staf_update
 BEFORE UPDATE ON staf
 FOR EACH ROW
@@ -119,17 +123,17 @@ BEGIN
     DECLARE v_kode VARCHAR(10);
     DECLARE v_seq INT;
 
-    -- Hanya ganti ID JIKA posisinya benar-benar diubah!
+    -- hanya ganti id jika posisinya benar-benar diubah
     IF NEW.id_posisi != OLD.id_posisi THEN
         
-        -- Ambil kode dari posisi yang BARU
+        -- ambil kode dari posisi yang baru
         SELECT kode_posisi, counter + 1 INTO v_kode, v_seq
         FROM posisi WHERE id_posisi = NEW.id_posisi;
 
-        -- Simpan urutan terbaru ke tabel posisi
+        -- simpan urutan terbaru ke tabel posisi
         UPDATE posisi SET counter = v_seq WHERE id_posisi = NEW.id_posisi;
 
-        -- Timpa kode_staf lama dengan kode posisi yang baru!
+        -- timpa kode_staf lama dengan kode posisi yang baru
         SET NEW.kode_staf = CONCAT(v_kode, '-', LPAD(v_seq, 3, '0'));
         
     END IF;
@@ -138,11 +142,11 @@ END //
 DELIMITER ;
 
 
--- ==========================================
--- 4. TABEL FISIK & OPERASIONAL 
--- ==========================================
 
--- Data Fisik Kamar
+-- TABEL FISIK & OPERASIONAL 
+
+-- data kamar
+
 CREATE TABLE kamar (
     id_kamar INT AUTO_INCREMENT PRIMARY KEY,
     id_tipe INT,
@@ -153,7 +157,8 @@ CREATE TABLE kamar (
     FOREIGN KEY (id_tipe) REFERENCES tipe_kamar(id_tipe) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Jadwal Pembersihan Kamar (Housekeeping)
+-- jadwal pembersihan kamar (housekeeping)
+
 CREATE TABLE jadwal_kebersihan (
     id_jadwal INT AUTO_INCREMENT PRIMARY KEY,
     id_kamar INT,
@@ -166,11 +171,11 @@ CREATE TABLE jadwal_kebersihan (
 ) ENGINE=InnoDB;
 
 
--- ==========================================
--- 5. TABEL RESERVASI (Inti Sistem)
--- ==========================================
 
--- Reservasi Utama (Kamar)
+-- TABEL RESERVASI (Inti Sistem)
+
+-- reservasi kamar
+
 CREATE TABLE reservasi (
     id_reservasi VARCHAR(20) PRIMARY KEY, 
     id_tamu INT,
@@ -181,7 +186,8 @@ CREATE TABLE reservasi (
     FOREIGN KEY (id_tamu) REFERENCES tamu(id_tamu) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Detail Reservasi Kamar (Mendukung Multi-Kamar & Kunci Harga)
+-- detail reservasi kamar
+
 CREATE TABLE detail_reservasi (
     id_detail INT AUTO_INCREMENT PRIMARY KEY,
     id_reservasi VARCHAR(20),
@@ -191,7 +197,7 @@ CREATE TABLE detail_reservasi (
     FOREIGN KEY (id_kamar) REFERENCES kamar(id_kamar) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Reservasi Fasilitas (Restoran, Spa, Event)
+-- reservasi fasilitas
 CREATE TABLE reservasi_fasilitas (
     id_res_fasilitas VARCHAR(20) PRIMARY KEY, 
     id_tamu INT,
@@ -208,11 +214,11 @@ CREATE TABLE reservasi_fasilitas (
 ) ENGINE=InnoDB;
 
 
--- ==========================================
--- 6. TABEL KEUANGAN (Billing & Payment)
--- ==========================================
 
--- Tagihan Komprehensif
+-- TABEL KEUANGAN
+
+-- tagihan e-voucher
+
 CREATE TABLE invoice (
     id_invoice INT AUTO_INCREMENT PRIMARY KEY,
     id_reservasi VARCHAR(20) UNIQUE,
@@ -225,7 +231,7 @@ CREATE TABLE invoice (
     FOREIGN KEY (id_reservasi) REFERENCES reservasi(id_reservasi) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Riwayat Pembayaran / Cicilan
+-- riwayat pembayaran/cicilan
 CREATE TABLE pembayaran (
     id_pembayaran INT AUTO_INCREMENT PRIMARY KEY,
     id_invoice INT,
@@ -237,11 +243,11 @@ CREATE TABLE pembayaran (
 ) ENGINE=InnoDB;
 
 
--- ==========================================
--- 7. DATA DEFAULT (Seed Data)
--- ==========================================
 
--- Masukkan Master Posisi
+-- DATA DEFAULT
+
+-- posisi staf
+
 INSERT INTO posisi (kode_posisi, nama_posisi, gaji_pokok, tunjangan) VALUES
 ('MG', 'Manager', 8500000.00, 1500000.00),
 ('BO', 'Back Office', 5000000.00, 750000.00),
@@ -254,44 +260,24 @@ INSERT INTO posisi (kode_posisi, nama_posisi, gaji_pokok, tunjangan) VALUES
 
 
 
--- ==========================================
--- 3. GENERATE SLIP GAJI OTOMATIS (BULAN INI)
--- ==========================================
--- Ubah format bulan ke Bahasa Indonesia
-SET lc_time_names = 'id_ID';
 
--- Tarik data gaji berdasarkan posisi staf dan buatkan slipnya otomatis
-INSERT INTO slip_gaji (id_staf, periode_bulan, gaji_pokok, tunjangan, potongan, total_bersih, tanggal_cair, status_pembayaran)
-SELECT 
-    s.id_staf, 
-    DATE_FORMAT(CURDATE(), '%M %Y'),
-    p.gaji_pokok,  
-    p.tunjangan,   
-    150000.00,
-    (p.gaji_pokok + p.tunjangan - 150000.00), 
-    DATE_FORMAT(CURDATE(), '%Y-%m-01'),
-    'Terbayar'
-FROM staf s
-JOIN posisi p ON s.id_posisi = p.id_posisi;
+-- AKUN STAF
 
-
--- ==========================================
--- MASUKKAN AKUN MASTER & STAF (K-UNIVERSE EDITION)
--- ==========================================
 INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUES
 
--- 1. Manager (id_posisi = 1)
+-- 1. manager
+
 ('Kim Do Hyun', 1, '081100000001', 'kim.dohyun', 'hotel123'),
 ('Lee Min Seok', 1, '081112223333', 'lee.minseok', 'hotel123'),
 ('Park Seo Jin', 1, '081100000003', 'park.seojin', 'hotel123'),
 
--- 2. Back Office (id_posisi = 2)
+-- 2. back office
 ('Choi Yu Jin', 2, '081100000002', 'choi.yujin', 'hotel123'),
 ('Kang Seul Ha', 2, '081100000004', 'kang.seulha', 'hotel123'),
 ('Cha Eun Woo', 2, '081100000005', 'cha.eunwoo', 'hotel123'),
 ('Im Ju Kyung', 2, '081100000006', 'im.jukyung', 'hotel123'),
 
--- 3. Front Office (id_posisi = 3)
+-- front office
 ('Hwang Hyun Woo', 3, '081400003001', 'hwang.hyunwoo', 'hotel123'),
 ('Bae Su Jin', 3, '081400003002', 'bae.sujin', 'hotel123'),
 ('Kwon Eun Ah', 3, '081400003003', 'kwon.eunah', 'hotel123'),
@@ -301,7 +287,7 @@ INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUE
 ('Lim Na Hee', 3, '081400003007', 'lim.nahee', 'hotel123'),
 ('Han So Yoon', 3, '081400003008', 'han.soyoon', 'hotel123'),
 
--- 4. Housekeeping (id_posisi = 4)
+-- housekeeping
 ('Jung Eun Chae', 4, '081234567890', 'jung.eunchae', 'hotel123'),
 ('Kim Ji Hoon', 4, '081298765432', 'kim.jihoon', 'hotel123'),
 ('Lee Soo Jin', 4, '081311223344', 'lee.soojin', 'hotel123'),
@@ -336,7 +322,7 @@ INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUE
 ('Jang Geu Rae', 4, '081200001029', 'jang.geurae', 'hotel123'),
 ('Ahn Young Yi', 4, '081200001030', 'ahn.youngyi', 'hotel123'),
 
--- 5. Food & Beverage (id_posisi = 5)
+-- food & beverage
 ('Kim Shin', 5, '081500004001', 'kim.shin', 'hotel123'),
 ('Ji Eun Tak', 5, '081500004002', 'ji.euntak', 'hotel123'),
 ('Wang Yeo', 5, '081500004003', 'wang.yeo', 'hotel123'),
@@ -346,13 +332,13 @@ INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUE
 ('Jo Yi Seo', 5, '081500004007', 'jo.yiseo', 'hotel123'),
 ('Park Sae Ro Yi', 5, '081500004008', 'park.saeroyi', 'hotel123'),
 
--- 6. Wellness & SPA (id_posisi = 6)
+-- ellness & spa
 ('Yoon Se Ri', 6, '081600005001', 'yoon.seri', 'hotel123'),
 ('Ri Jeong Hyeok', 6, '081600005002', 'ri.jeonghyeok', 'hotel123'),
 ('Seo Dan', 6, '081600005003', 'seo.dan', 'hotel123'),
 ('Gu Seung Joon', 6, '081600005004', 'gu.seungjoon', 'hotel123'),
 
--- 7. Engineering (id_posisi = 7)
+-- engineering
 ('Lee Ik Jun', 7, '081555666777', 'lee.ikjun', 'hotel123'),
 ('Ahn Jeong Won', 7, '081300002001', 'ahn.jeongwon', 'hotel123'),
 ('Kim Jun Wan', 7, '081300002002', 'kim.junwan', 'hotel123'),
@@ -365,7 +351,7 @@ INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUE
 ('Jang Jun Woo', 7, '081300002009', 'jang.junwoo', 'hotel123'),
 ('Park Bin Ho', 7, '081300002010', 'park.binho', 'hotel123'),
 
--- 8. Sales & Marketing (id_posisi = 8)
+-- sales & marketing
 ('Oh Soo Ah', 8, '081700006001', 'oh.sooah', 'hotel123'),
 ('Jang Geun Won', 8, '081700006002', 'jang.geunwon', 'hotel123'),
 ('Kang Tae Moo', 8, '081700006003', 'kang.taemoo', 'hotel123'),
@@ -373,10 +359,31 @@ INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password) VALUE
 
 
 
--- ==========================================
--- 6. INPUT DATA AWAL (Tipe Kamar, Fasilitas, Kamar Fisik)
--- ==========================================
--- Input Data Tipe Kamar
+
+-- SLIP GAJI (BULAN INI)
+
+-- ubah format bulan ke bahasa indonesia
+SET lc_time_names = 'id_ID';
+
+-- tarik data gaji berdasarkan posisi staf dan buatkan slipnya otomatis
+INSERT INTO slip_gaji (id_staf, periode_bulan, gaji_pokok, tunjangan, potongan, total_bersih, tanggal_cair, status_pembayaran)
+SELECT 
+    s.id_staf, 
+    DATE_FORMAT(CURDATE(), '%M %Y'),
+    p.gaji_pokok,  
+    p.tunjangan,   
+    150000.00,
+    (p.gaji_pokok + p.tunjangan - 150000.00), 
+    DATE_FORMAT(CURDATE(), '%Y-%m-01'),
+    'Terbayar'
+FROM staf s
+JOIN posisi p ON s.id_posisi = p.id_posisi;
+
+
+
+-- INPUT DATA AWAL (Tipe Kamar, Fasilitas, Kamar Fisik)
+
+-- tipe kamar
 INSERT INTO tipe_kamar (id_tipe, nama_tipe, kapasitas, lantai_min, lantai_max, harga_per_malam, fasilitas, deskripsi) VALUES
 (1, 'Standard King', 2, 3, 5, 500000, 'Wi-Fi 50Mbps, Smart TV 40", AC Sentral, Air Panas/Dingin', 'Kamar nyaman seluas 25 meter persegi dengan ranjang King. Pilihan ekonomis terbaik untuk pengalaman menginap yang efisien.'),
 (2, 'Standard Twin', 2, 3, 5, 500000, 'Wi-Fi 50Mbps, Smart TV 40", AC Sentral, Air Panas/Dingin', 'Kamar nyaman 25 meter persegi dengan dua ranjang terpisah. Sangat cocok untuk rekan kerja atau teman perjalanan.'),
