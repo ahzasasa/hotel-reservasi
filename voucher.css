@@ -1,9 +1,8 @@
-/* ==========================================
-   DESAIN LAYOUT UTAMA E-VOUCHER
-   ========================================== */
+/* DESAIN LAYOUT UTAMA E-VOUCHER */
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #E6E2DA; /* Warna latar belakang beige */
+    background-color: #E6E2DA;
     margin: 0;
     padding: 40px 20px;
     display: flex;
@@ -16,14 +15,14 @@ body {
     max-width: 700px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-top: 10px solid #154230; /* Aksen hijau gelap hotel */
+    border-top: 10px solid #154230;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 2px solid #A6824A; /* Aksen emas */
+    border-bottom: 2px solid #A6824A;
     padding-bottom: 20px;
     margin-bottom: 30px;
 }
@@ -73,9 +72,8 @@ body {
     margin-bottom: 15px;
 }
 
-/* ==========================================
-   TABEL DETAIL DATA
-   ========================================== */
+/* TABEL DETAIL DATA */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -97,7 +95,7 @@ td:first-child {
 .total-row td {
     font-size: 18px;
     font-weight: bold;
-    color: #5D1E21; /* Merah Marun */
+    color: #5D1E21;
     border-bottom: none;
 }
 
@@ -110,9 +108,8 @@ td:first-child {
     padding-top: 20px;
 }
 
-/* ==========================================
-   KOMPONEN TOMBOL & INPUT AKSI
-   ========================================== */
+/* KOMPONEN TOMBOL & INPUT AKSI */
+
 .action-container {
     margin-top: 30px;
 }
@@ -163,7 +160,6 @@ td:first-child {
 .btn-print { background-color: #5D1E21; }
 .btn-print:hover { background-color: #3d1315; }
 
-/* Menyembunyikan elemen tombol saat dicetak atau disave ke PDF */
 @media print {
     body { background-color: white; padding: 0; }
     .voucher-container { box-shadow: none; border: none; max-width: 100%; padding: 0; }
