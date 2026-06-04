@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // encetak data ke layar
+    // mencetak data ke layar
     function cetakDataVoucher(dataResult, isFasilitas = false) {
         const p = dataResult.data || dataResult;
         
