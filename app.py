@@ -1517,7 +1517,40 @@ def get_semua_tipe_kamar():
         if conn: conn.close()
         
                                                
+# ENDPOINT TAMBAH STAF BARU
 
+@app.route('/api/tambah-staf', methods=['POST'])
+def tambah_staf():
+    data = request.json
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 1. cek apakah username sudah dipakai orang lain
+        cursor.execute("SELECT id_staf FROM staf WHERE username = %s", (data['username'],))
+        if cursor.fetchone():
+            return jsonify({"status": "error", "message": "Username sudah digunakan! Silakan gunakan username lain."})
+
+        # 2. masukkan data staf baru ke database
+        cursor.execute("""
+            INSERT INTO staf (nama_staf, id_posisi, nomor_telepon, username, password)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (data['nama'], data['id_posisi'], data['telepon'], data['username'], data['password']))
+        
+        conn.commit()
+        return jsonify({"status": "success", "message": f"Karyawan bernama {data['nama']} berhasil didaftarkan!"})
+
+    except Exception as e:
+        if conn: conn.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+        
+        
+        
 # MENJALANKAN SERVER
 
 if __name__ == '__main__':

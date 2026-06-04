@@ -887,6 +887,50 @@ function editStaf(kodeStaf) {
 }
 
 
+// FUNGSI PENDAFTARAN STAF BARU
+const formTambahStaf = document.getElementById('form-tambah-staf');
+if (formTambahStaf) {
+    formTambahStaf.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btnSubmit = formTambahStaf.querySelector('button');
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> MEMPROSES...';
+        btnSubmit.disabled = true;
+
+        // mengambil data dari form HTML
+        const payload = {
+            nama: document.getElementById('staf-nama').value,
+            id_posisi: document.getElementById('staf-posisi').value,
+            telepon: document.getElementById('staf-telepon').value,
+            username: document.getElementById('staf-username').value,
+            password: document.getElementById('staf-password').value
+        };
+
+        // mengirim data ke server Python
+        fetch('http://127.0.0.1:5000/api/tambah-staf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire('Berhasil!', data.message, 'success');
+                formTambahStaf.reset();
+                if (typeof muatDaftarStaf === 'function') muatDaftarStaf();
+            } else {
+                Swal.fire('Gagal!', data.message, 'error');
+            }
+        })
+        .catch(err => {
+            Swal.fire('Error!', 'Gagal terhubung ke server database.', 'error');
+        })
+        .finally(() => {
+            btnSubmit.innerHTML = '<i class="fa-solid fa-save"></i> DAFTARKAN STAF';
+            btnSubmit.disabled = false;
+        });
+    });
+}
 
 // JALANKAN SAAT HALAMAN DIMUAT
 
